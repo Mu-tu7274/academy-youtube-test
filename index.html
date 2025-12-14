@@ -1,1 +1,245 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Auth Token + YouTube Test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0b0c10;
+      color: #f5f5f5;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    h1 {
+      font-size: 20px;
+      margin-bottom: 12px;
+    }
+
+    .token-box {
+      background: #151823;
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .token-label {
+      font-size: 13px;
+      opacity: 0.8;
+      margin-bottom: 6px;
+    }
+
+    .token-value {
+      font-family: "Fira Code", monospace;
+      font-size: 12px;
+      word-break: break-all;
+      background: #0f1118;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .controls {
+      background: #151823;
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .controls label {
+      font-size: 13px;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .controls input {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: #0f1118;
+      color: #f5f5f5;
+      font-size: 13px;
+      box-sizing: border-box;
+    }
+
+    .btn-row {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      background: #2f80ed;
+      color: #fff;
+      font-weight: 500;
+    }
+
+    button.secondary {
+      background: #4b5563;
+    }
+
+    button:active {
+      opacity: 0.8;
+    }
+
+    .iframe-wrapper {
+      margin-top: 8px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: #000;
+      /* 16:9 */
+      position: relative;
+      padding-top: 56.25%;
+    }
+
+    .iframe-wrapper iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    .small-note {
+      font-size: 11px;
+      opacity: 0.7;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Token + YouTube Test Page</h1>
+
+    <!-- عرض التوكين القادم من Flutter (localStorage.authToken) -->
+    <div class="token-box">
+      <div class="token-label">Auth token from <code>localStorage.authToken</code>:</div>
+      <div id="tokenValue" class="token-value">Loading token…</div>
+    </div>
+
+    <!-- إدخال لينك يوتيوب -->
+    <div class="controls">
+      <label for="ytUrl">YouTube URL to test:</label>
+      <input
+        id="ytUrl"
+        type="text"
+        value="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+        placeholder="https://www.youtube.com/watch?v=VIDEO_ID"
+      />
+
+      <div class="btn-row">
+        <!-- فتح الفيديو في نفس الصفحة (WebView هيتحوّل مباشرة ليوتيوب) -->
+        <button id="openSameTab">Open video in this tab</button>
+
+        <!-- تحميل الفيديو في iframe داخل نفس الصفحة -->
+        <button id="openInIframe" class="secondary">Load in iframe below</button>
+      </div>
+
+      <div class="small-note">
+        • زر <b>Open video in this tab</b> يغيّر <code>window.location</code> إلى يوتيوب (زي ما يحصل عادي).<br/>
+        • زر <b>Load in iframe</b> بيحمّل الفيديو في &lt;iframe&gt; جوّه نفس الصفحة (مفيد للاختبار).
+      </div>
+
+      <div class="iframe-wrapper">
+        <iframe
+          id="ytFrame"
+          src=""
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen>
+        </iframe>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      // قراءة التوكين من localStorage وعرضه
+      function showToken() {
+        var box = document.getElementById("tokenValue");
+        var tokenText = "";
+
+        try {
+          var token = window.localStorage.getItem("authToken");
+          if (!token) {
+            tokenText = "NO TOKEN FOUND in localStorage.authToken";
+          } else {
+            tokenText = token;
+          }
+        } catch (e) {
+          tokenText = "Error reading localStorage: " + e;
+        }
+
+        box.textContent = tokenText;
+      }
+
+      // تحويل لينك يوتيوب عادي إلى embed URL لو أمكن
+      function toEmbedUrl(raw) {
+        try {
+          var url = new URL(raw);
+
+          // https://youtu.be/VIDEO_ID
+          if (url.hostname.includes("youtu.be")) {
+            var vid = url.pathname.replace("/", "");
+            if (vid) {
+              return "https://www.youtube.com/embed/" + vid;
+            }
+          }
+
+          // https://www.youtube.com/watch?v=VIDEO_ID
+          if (url.hostname.includes("youtube.com")) {
+            var v = url.searchParams.get("v");
+            if (v) {
+              return "https://www.youtube.com/embed/" + v;
+            }
+          }
+        } catch (e) {
+          // لو مش URL valid، رجّعها زي ما هي
+        }
+        return raw;
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        showToken();
+
+        var ytInput = document.getElementById("ytUrl");
+        var openSameTabBtn = document.getElementById("openSameTab");
+        var openInIframeBtn = document.getElementById("openInIframe");
+        var frame = document.getElementById("ytFrame");
+
+        openSameTabBtn.addEventListener("click", function () {
+          var url = ytInput.value.trim();
+          if (!url) return;
+          // هينقل نفس الـ WebView ليوتيوب مباشرة
+          window.location.href = url;
+        });
+
+        openInIframeBtn.addEventListener("click", function () {
+          var url = ytInput.value.trim();
+          if (!url) return;
+          var embedUrl = toEmbedUrl(url);
+          frame.src = embedUrl;
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
