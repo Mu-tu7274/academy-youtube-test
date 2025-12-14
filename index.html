@@ -150,25 +150,7 @@
         <!-- فتح الفيديو في نفس الصفحة (WebView هيتحوّل مباشرة ليوتيوب) -->
         <button id="openSameTab">Open video in this tab</button>
 
-        <!-- تحميل الفيديو في iframe داخل نفس الصفحة -->
-        <button id="openInIframe" class="secondary">Load in iframe below</button>
-      </div>
-
-      <div class="small-note">
-        • زر <b>Open video in this tab</b> يغيّر <code>window.location</code> إلى يوتيوب (زي ما يحصل عادي).<br/>
-        • زر <b>Load in iframe</b> بيحمّل الفيديو في &lt;iframe&gt; جوّه نفس الصفحة (مفيد للاختبار).
-      </div>
-
-      <div class="iframe-wrapper">
-        <iframe
-          id="ytFrame"
-          src=""
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowfullscreen>
-        </iframe>
-      </div>
-    </div>
-  </div>
+     
 
   <script>
     (function () {
