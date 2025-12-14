@@ -1,19 +1,18 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <title>Pod Player – Token & YouTube Test</title>
+  <title>تشغيل يوتيوب مع التوكن</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     :root {
       --bg-main: #050816;
       --bg-card: radial-gradient(circle at top, #1f1f49 0, #050816 40%, #02030a 100%);
-      --border-soft: rgba(255, 255, 255, 0.08);
+      --border-soft: rgba(255, 255, 255, 0.12);
       --accent: #ffb347;
       --accent-strong: #ff6b3d;
       --text-main: #f5f5f5;
       --text-muted: #a8a8c0;
-      --input-bg: rgba(8, 11, 30, 0.85);
     }
 
     * {
@@ -34,38 +33,31 @@
 
     .shell {
       width: 100%;
-      max-width: 800px;
+      max-width: 520px;
       border-radius: 20px;
       background: var(--bg-card);
       box-shadow:
-        0 22px 50px rgba(0, 0, 0, 0.7),
-        0 0 0 1px rgba(255, 255, 255, 0.04);
-      padding: 20px 20px 16px;
-    }
-
-    .header-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 14px;
+        0 20px 45px rgba(0, 0, 0, 0.75),
+        0 0 0 1px rgba(255, 255, 255, 0.05);
+      padding: 20px 18px 18px;
     }
 
     .title {
       font-size: 18px;
       font-weight: 600;
       letter-spacing: 0.02em;
+      margin-bottom: 8px;
+      text-align: center;
     }
 
-    .badge {
-      font-size: 11px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.16);
+    .subtitle {
+      font-size: 13px;
       color: var(--text-muted);
+      margin-bottom: 16px;
+      text-align: center;
     }
 
-    .section-label {
+    .token-label {
       font-size: 12px;
       color: var(--text-muted);
       margin-bottom: 6px;
@@ -84,133 +76,91 @@
       overflow-wrap: break-word;
     }
 
-    .input-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 16px;
-      margin-bottom: 12px;
-    }
-
-    .input-row input {
-      flex: 1 1 260px;
-      min-width: 0;
-      border-radius: 999px;
-      border: 1px solid var(--border-soft);
-      background: var(--input-bg);
-      padding: 9px 12px;
-      font-size: 13px;
-      color: var(--text-main);
-      outline: none;
-    }
-
-    .input-row input::placeholder {
-      color: rgba(168, 168, 192, 0.7);
-    }
-
     .btn {
+      margin-top: 18px;
+      width: 100%;
       border-radius: 999px;
       border: none;
       outline: none;
-      font-size: 12px;
-      padding: 9px 14px;
+      font-size: 14px;
+      padding: 10px 16px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 8px;
       cursor: pointer;
       white-space: nowrap;
-    }
-
-    .btn-primary {
       background: linear-gradient(135deg, var(--accent), var(--accent-strong));
       color: #050816;
-      box-shadow: 0 8px 20px rgba(255, 107, 61, 0.45);
       font-weight: 600;
+      box-shadow: 0 10px 24px rgba(255, 107, 61, 0.45);
     }
 
     .btn-secondary {
+      margin-top: 10px;
       background: transparent;
       color: var(--text-main);
       border: 1px solid var(--border-soft);
+      box-shadow: none;
     }
 
-    .iframe-shell {
-      margin-top: 12px;
-      border-radius: 14px;
-      overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      background: #000;
-      height: 220px;
-    }
-
-    .iframe-shell iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-
-    @media (max-width: 560px) {
-      .shell {
-        padding: 14px 12px;
-      }
-
-      .title {
-        font-size: 16px;
-      }
-
-      .iframe-shell {
-        height: 180px;
-      }
+    .hidden {
+      display: none;
     }
   </style>
 </head>
 <body>
   <div class="shell">
-    <div class="header-row">
-      <div class="title">Pod Player – Token & YouTube Tester</div>
-      <div class="badge">Debug Panel</div>
-    </div>
 
-    <!-- عرض التوكن -->
-    <div class="section-label">authToken from localStorage</div>
-    <div id="tokenBox" class="token-box">
-      Loading token...
-    </div>
+    <!-- الصفحة الأولى -->
+    <div id="page1">
+      <div class="title">تشغيل يوتيوب معنا</div>
+      <div class="subtitle">
+        اضغط على الزر بالأسفل للانتقال إلى خطوة تشغيل الفيديو.
+      </div>
 
-    <!-- إدخال لينك يوتيوب + الأزرار -->
-    <div class="input-row">
-      <input
-        id="ytUrl"
-        type="text"
-        placeholder="Paste a YouTube URL here..."
-      />
+      <div class="token-label">authToken من localStorage</div>
+      <div id="tokenBoxPage1" class="token-box">
+        جارِ تحميل التوكن...
+      </div>
 
-      <button id="openSameTab" class="btn btn-primary">
-        Open Video in Same Tab
-      </button>
-
-      <button id="openInIframe" class="btn btn-secondary">
-        Open in Iframe
+      <button id="goToPage2" class="btn">
+        اضغط هنا لتشغيل يوتيوب معنا
+        <span style="font-size: 18px;">▶</span>
       </button>
     </div>
 
-    <div class="section-label">Inline preview (iframe)</div>
-    <div class="iframe-shell">
-      <iframe
-        id="ytFrame"
-        src=""
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowfullscreen
-      ></iframe>
+    <!-- الصفحة الثانية -->
+    <div id="page2" class="hidden">
+      <div class="title">خطوة تشغيل الفيديو</div>
+      <div class="subtitle">
+        الآن يمكنك تشغيل الفيديو على يوتيوب في نفس الشاشة.
+      </div>
+
+      <div class="token-label">authToken من localStorage</div>
+      <div id="tokenBoxPage2" class="token-box">
+        جارِ تحميل التوكن...
+      </div>
+
+      <button id="openYoutube" class="btn">
+        اضغط الآن لتشغيل الفيديو
+        <span style="font-size: 18px;">▶</span>
+      </button>
+
+      <button id="backToPage1" class="btn btn-secondary">
+        رجوع للصفحة السابقة
+      </button>
     </div>
   </div>
 
   <script>
     (function () {
-      // عرض التوكن الموجود في localStorage
-      function showToken() {
-        var box = document.getElementById("tokenBox");
+      // غيّر هذا المتغيّر لرابط يوتيوب الذي تريد فتحه:
+      const YOUTUBE_URL = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+
+      // دالة تعرض التوكن في العنصر المطلوب
+      function showTokenIn(elementId) {
+        var box = document.getElementById(elementId);
         if (!box) return;
 
         var tokenText = "";
@@ -219,162 +169,47 @@
           if (token) {
             tokenText = "authToken: " + token;
           } else {
-            tokenText = "No authToken found in localStorage.";
+            tokenText = "لا يوجد authToken في localStorage.";
           }
         } catch (e) {
-          tokenText = "Error reading localStorage: " + e;
+          tokenText = "خطأ أثناء قراءة localStorage: " + e;
         }
-
         box.textContent = tokenText;
       }
 
-      // تحويل لينك يوتيوب عادي إلى embed URL لو أمكن
-      function toEmbedUrl(raw) {
-        try {
-          var url = new URL(raw);
-
-          // https://youtu.be/VIDEO_ID
-          if (url.hostname.includes("youtu.be")) {
-            var vid = url.pathname.replace("/", "");
-            if (vid) {
-              return "https://www.youtube.com/embed/" + vid;
-            }
-          }
-
-          // https://www.youtube.com/watch?v=VIDEO_ID
-          if (url.hostname.includes("youtube.com")) {
-            var v = url.searchParams.get("v");
-            if (v) {
-              return "https://www.youtube.com/embed/" + v;
-            }
-          }
-        } catch (e) {
-          // لو مش URL valid، رجّعها زي ما هي
-        }
-        return raw;
-      }
-
       document.addEventListener("DOMContentLoaded", function () {
-        showToken();
+        var page1 = document.getElementById("page1");
+        var page2 = document.getElementById("page2");
 
-        var ytInput = document.getElementById("ytUrl");
-        var openSameTabBtn = document.getElementById("openSameTab");
-        var openInIframeBtn = document.getElementById("openInIframe");
-        var frame = document.getElementById("ytFrame");
+        var goToPage2Btn = document.getElementById("goToPage2");
+        var openYoutubeBtn = document.getElementById("openYoutube");
+        var backToPage1Btn = document.getElementById("backToPage1");
 
-        // متغير جلوبال نخزن فيه لينك الفيديو
-        window._pendingVideoUrl = null;
+        // عرض التوكن في الصفحة الأولى عند التحميل
+        showTokenIn("tokenBoxPage1");
 
-        // زر: Open Video → يودّي أولاً لصفحة وسيطة فيها زر تأكيد
-        openSameTabBtn.addEventListener("click", function () {
-          var url = ytInput.value.trim();
-          if (!url) return;
+        // عند الضغط على زر الانتقال للصفحة الثانية
+        goToPage2Btn.addEventListener("click", function () {
+          // إظهار الصفحة الثانية وإخفاء الأولى
+          page1.classList.add("hidden");
+          page2.classList.remove("hidden");
 
-          window._pendingVideoUrl = url;
-
-          // نرسم "صفحة" جديدة بسيطة فيها زر تأكيد
-          document.body.innerHTML = `
-          <div style="
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            min-height: 100vh;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #050816;
-            color: #f5f5f5;
-          ">
-            <div style="
-              max-width: 420px;
-              width: 90%;
-              padding: 24px 20px;
-              border-radius: 16px;
-              background: radial-gradient(circle at top, #1f1f49 0, #050816 40%, #02030a 100%);
-              box-shadow:
-                0 18px 45px rgba(0,0,0,0.7),
-                0 0 0 1px rgba(255,255,255,0.04);
-              text-align: center;
-            ">
-              <h2 style="margin: 0 0 12px; font-size: 20px; font-weight: 600;">
-                تأكيد فتح الفيديو
-              </h2>
-              <p style="margin: 0 0 20px; font-size: 13px; line-height: 1.6; color: #c9c9d4;">
-                سيتم فتح فيديو يوتيوب في نفس الشاشة.<br>
-                اضغط على الزر بالأسفل للمتابعة.
-              </p>
-
-              <button
-                id="confirmOpenVideo"
-                style="
-                  display: inline-flex;
-                  align-items: center;
-                  justify-content: center;
-                  gap: 8px;
-                  padding: 10px 20px;
-                  border-radius: 999px;
-                  border: none;
-                  outline: none;
-                  background: linear-gradient(135deg, #ffb347, #ff6b3d);
-                  color: #050816;
-                  font-size: 14px;
-                  font-weight: 600;
-                  cursor: pointer;
-                  box-shadow: 0 8px 20px rgba(255,107,61,0.45);
-                "
-              >
-                فتح الفيديو الآن
-                <span style="font-size: 16px;">▶</span>
-              </button>
-
-              <button
-                id="cancelBack"
-                style="
-                  margin-top: 10px;
-                  display: block;
-                  width: 100%;
-                  padding: 8px 16px;
-                  border-radius: 999px;
-                  border: 1px solid rgba(255,255,255,0.18);
-                  background: transparent;
-                  color: #c9c9d4;
-                  font-size: 12px;
-                  cursor: pointer;
-                "
-              >
-                رجوع للصفحة السابقة
-              </button>
-            </div>
-          </div>
-        `;
-
-          // زر تأكيد فتح الفيديو
-          document
-            .getElementById("confirmOpenVideo")
-            .addEventListener("click", function () {
-              if (window._pendingVideoUrl) {
-                window.location.href = window._pendingVideoUrl;
-              }
-            });
-
-          // زر رجوع للصفحة الأصلية (إعادة تحميل)
-          document
-            .getElementById("cancelBack")
-            .addEventListener("click", function () {
-              window.location.reload();
-            });
+          // عرض التوكن في الصفحة الثانية أيضًا
+          showTokenIn("tokenBoxPage2");
         });
 
-        // زر فتح داخل iframe يظل كما هو
-        openInIframeBtn.addEventListener("click", function () {
-          var url = ytInput.value.trim();
-          if (!url) return;
-          var embedUrl = toEmbedUrl(url);
-          frame.src = embedUrl;
+        // زر تشغيل الفيديو: يفتح يوتيوب في نفس الـ WebView
+        openYoutubeBtn.addEventListener("click", function () {
+          window.location.href = YOUTUBE_URL;
+        });
+
+        // زر الرجوع: يرجع للصفحة الأولى بدون إعادة تحميل
+        backToPage1Btn.addEventListener("click", function () {
+          page2.classList.add("hidden");
+          page1.classList.remove("hidden");
         });
       });
     })();
   </script>
 </body>
 </html>
-
