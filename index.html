@@ -154,69 +154,43 @@
   const YOUTUBE_EMBED_URL =
     "https://www.youtube.com/embed/m-VVub8Jp_w?autoplay=1&playsinline=1";
 
-  // ==============================
-  // ✅ 1) ضع بيانات الدرس يدويًا هنا
-  // ==============================
   const LESSON_CONTEXT = {
-    isInteractiveQuiz: true, // أو false
-
-    // timelineMarkers: الاسم + الوقت بصيغة HH:MM:SS
+    isInteractiveQuiz: true,
     timelineMarkers: [
       { name: "مقدمة", time: "00:00:10" },
       { name: "الجزء الأول", time: "00:02:30" },
       { name: "خلاصة", time: "00:08:15" }
     ],
-
-    // lessonQuizzes: quizId + وقت الظهور بالثواني + رابط الكويز
     lessonQuizzes: [
-      {
-        quizId: "QZ_001",
-        appearAtSeconds: 45,
-        webUrl: "https://example.com/quiz/1",
-        isCompleted: false
-      },
-      {
-        quizId: "QZ_002",
-        appearAtSeconds: 210,
-        webUrl: "https://example.com/quiz/2",
-        isCompleted: false
-      }
+      { quizId: "QZ_001", appearAtSeconds: 45,  webUrl: "https://example.com/quiz/1", isCompleted: false },
+      { quizId: "QZ_002", appearAtSeconds: 210, webUrl: "https://example.com/quiz/2", isCompleted: false }
     ]
   };
 
-  // ==============================
-  // Helpers
-  // ==============================
   function parseTimeToSeconds(timeStr) {
-    // "HH:MM:SS" -> seconds
     const parts = String(timeStr || "00:00:00").split(":").map(Number);
     if (parts.length !== 3 || parts.some(isNaN)) return 0;
     return parts[0] * 3600 + parts[1] * 60 + parts[2];
   }
 
   function writeLessonContextToLocalStorage(ctx) {
-    try {
-      // نحسب timeInSeconds تلقائيًا للتسهيل على Flutter
-      const timeline = (ctx.timelineMarkers || []).map(m => ({
-        name: m.name || "",
-        time: m.time || "00:00:00",
-        timeInSeconds: parseTimeToSeconds(m.time)
-      }));
+    const timeline = (ctx.timelineMarkers || []).map(m => ({
+      name: m.name || "",
+      time: m.time || "00:00:00",
+      timeInSeconds: parseTimeToSeconds(m.time)
+    }));
 
-      const quizzes = (ctx.lessonQuizzes || []).map(q => ({
-        quizId: String(q.quizId || ""),
-        appearAtSeconds: Number(q.appearAtSeconds || 0),
-        webUrl: String(q.webUrl || ""),
-        isCompleted: !!q.isCompleted
-      }));
+    const quizzes = (ctx.lessonQuizzes || []).map(q => ({
+      quizId: String(q.quizId || ""),
+      appearAtSeconds: Number(q.appearAtSeconds || 0),
+      webUrl: String(q.webUrl || ""),
+      isCompleted: !!q.isCompleted
+    }));
 
-      localStorage.setItem("isInteractiveQuiz", JSON.stringify(!!ctx.isInteractiveQuiz));
-      localStorage.setItem("timelineMarkers", JSON.stringify(timeline));
-      localStorage.setItem("lessonQuizzes", JSON.stringify(quizzes));
-      return { ok: true, timeline, quizzes };
-    } catch (e) {
-      return { ok: false, error: String(e) };
-    }
+    localStorage.setItem("isInteractiveQuiz", JSON.stringify(!!ctx.isInteractiveQuiz));
+    localStorage.setItem("timelineMarkers", JSON.stringify(timeline));
+    localStorage.setItem("lessonQuizzes", JSON.stringify(quizzes));
+    return { ok: true, timeline, quizzes };
   }
 
   function notifyFlutterContextReady(payload) {
@@ -227,30 +201,68 @@
     } catch (e) {}
   }
 
+  function setTokenBoxes() {
+    const token = localStorage.getItem("authToken") || "(لا يوجد authToken)";
+    const b1 = document.getElementById("tokenBoxPage1");
+    const b2 = document.getElementById("tokenBoxPage2");
+    if (b1) b1.textContent = token;
+    if (b2) b2.textContent = token;
+  }
+
+  function showPage(pageNo) {
+    const p1 = document.getElementById("page1");
+    const p2 = document.getElementById("page2");
+    if (!p1 || !p2) return;
+
+    if (pageNo === 1) {
+      p1.classList.remove("hidden");
+      p2.classList.add("hidden");
+    } else {
+      p1.classList.add("hidden");
+      p2.classList.remove("hidden");
+    }
+    setTokenBoxes();
+  }
+
   function prepareAndGo(url) {
-    // ✅ اكتب الداتا في localStorage من LESSON_CONTEXT
     const result = writeLessonContextToLocalStorage(LESSON_CONTEXT);
 
-    // ✅ payload هو نفس الداتا اللي Flutter هيقرأها ويعرضها
     const payload = {
       ok: result.ok,
       isInteractiveQuiz: LESSON_CONTEXT.isInteractiveQuiz,
       timelineMarkers: result.timeline || [],
       lessonQuizzes: result.quizzes || [],
-      error: result.error || null,
       ts: Date.now()
     };
 
-    // ✅ ابعت event لـ Flutter (listener)
     notifyFlutterContextReady(payload);
 
-    // ✅ انتقل لليوتيوب بعد إرسال الإيفنت
     setTimeout(() => {
       window.location.href = url;
     }, 60);
   }
 
   document.addEventListener("DOMContentLoaded", function () {
+    // ✅ تحديث عرض التوكن
+    setTokenBoxes();
+
+    // ✅ زر الانتقال للصفحة 2 (كان ناقص)
+    const goToPage2 = document.getElementById("goToPage2");
+    if (goToPage2) {
+      goToPage2.onclick = function () {
+        showPage(2);
+      };
+    }
+
+    // ✅ زر الرجوع
+    const backToPage1 = document.getElementById("backToPage1");
+    if (backToPage1) {
+      backToPage1.onclick = function () {
+        showPage(1);
+      };
+    }
+
+    // ✅ أزرار تشغيل اليوتيوب
     const btnWatch = document.getElementById("openYoutube");
     const btnEmbed = document.getElementById("openYoutubeEmbedDirect");
 
@@ -260,6 +272,7 @@
 
 })();
 </script>
+
 
 </body>
 </html>
