@@ -14,9 +14,7 @@
       --text-main: #f5f5f5;
       --text-muted: #a8a8c0;
     }
-
     * { box-sizing: border-box; }
-
     body {
       margin: 0;
       min-height: 100vh;
@@ -28,38 +26,17 @@
       justify-content: center;
       padding: 16px;
     }
-
     .shell {
       width: 100%;
       max-width: 520px;
       border-radius: 20px;
       background: var(--bg-card);
-      box-shadow:
-        0 20px 45px rgba(0, 0, 0, 0.75),
-        0 0 0 1px rgba(255, 255, 255, 0.05);
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.05);
       padding: 20px 18px 18px;
     }
-
-    .title {
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 8px;
-      text-align: center;
-    }
-
-    .subtitle {
-      font-size: 13px;
-      color: var(--text-muted);
-      margin-bottom: 16px;
-      text-align: center;
-    }
-
-    .token-label {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-bottom: 6px;
-    }
-
+    .title { font-size: 18px; font-weight: 600; margin-bottom: 8px; text-align: center; }
+    .subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; text-align: center; }
+    .token-label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
     .token-box {
       width: 100%;
       min-height: 54px;
@@ -71,7 +48,6 @@
       line-height: 1.5;
       overflow-wrap: break-word;
     }
-
     .btn {
       margin-top: 18px;
       width: 100%;
@@ -89,7 +65,6 @@
       font-weight: 600;
       box-shadow: 0 10px 24px rgba(255, 107, 61, 0.45);
     }
-
     .btn-secondary {
       margin-top: 10px;
       background: transparent;
@@ -97,8 +72,22 @@
       border: 1px solid var(--border-soft);
       box-shadow: none;
     }
-
     .hidden { display: none; }
+
+    /* Logger بسيط */
+    .log {
+      margin-top: 12px;
+      font-size: 12px;
+      color: #cfcfe6;
+      opacity: 0.9;
+      border: 1px dashed rgba(255,255,255,0.18);
+      border-radius: 12px;
+      padding: 10px;
+      background: rgba(0,0,0,0.18);
+      max-height: 140px;
+      overflow: auto;
+      white-space: pre-wrap;
+    }
   </style>
 </head>
 
@@ -108,16 +97,14 @@
     <!-- الصفحة الأولى -->
     <div id="page1">
       <div class="title">تشغيل يوتيوب معنا</div>
-      <div class="subtitle">
-        اضغط على الزر بالأسفل للانتقال إلى خطوة تشغيل الفيديو.
-      </div>
+      <div class="subtitle">اضغط على الزر بالأسفل للانتقال إلى خطوة تشغيل الفيديو.</div>
 
       <div class="token-label">authToken من localStorage</div>
       <div id="tokenBoxPage1" class="token-box">جارِ تحميل التوكن...</div>
 
-      <button id="goToPage2" class="btn">
-        اضغط هنا لتشغيل يوتيوب معنا ▶
-      </button>
+      <button id="goToPage2" class="btn">اضغط هنا لتشغيل يوتيوب معنا ▶</button>
+
+      <div id="log1" class="log"></div>
     </div>
 
     <!-- الصفحة الثانية -->
@@ -128,32 +115,23 @@
       <div class="token-label">authToken من localStorage</div>
       <div id="tokenBoxPage2" class="token-box">جارِ تحميل التوكن...</div>
 
-      <!-- زر Watch -->
-      <button id="openYoutube" class="btn">
-        تشغيل يوتيوب (Watch) ▶
-      </button>
+      <button id="openYoutube" class="btn">تشغيل يوتيوب (Watch) ▶</button>
+      <button id="openYoutubeEmbedDirect" class="btn btn-secondary">تشغيل يوتيوب (Embedded مباشر) ▶</button>
+      <button id="backToPage1" class="btn btn-secondary">رجوع للصفحة السابقة</button>
 
-      <!-- ✅ زر Embed مباشر -->
-      <button id="openYoutubeEmbedDirect" class="btn btn-secondary">
-        تشغيل يوتيوب (Embedded مباشر) ▶
-      </button>
-
-      <button id="backToPage1" class="btn btn-secondary">
-        رجوع للصفحة السابقة
-      </button>
+      <div id="log2" class="log"></div>
     </div>
 
   </div>
 
-  <script>
+<script>
 (function () {
+  "use strict";
 
-  const YOUTUBE_WATCH_URL =
-    "https://www.youtube.com/watch?v=m-VVub8Jp_w";
+  const YOUTUBE_WATCH_URL = "https://www.youtube.com/watch?v=m-VVub8Jp_w";
+  const YOUTUBE_EMBED_URL = "https://www.youtube.com/embed/m-VVub8Jp_w?autoplay=1&playsinline=1";
 
-  const YOUTUBE_EMBED_URL =
-    "https://www.youtube.com/embed/m-VVub8Jp_w?autoplay=1&playsinline=1";
-
+  // ✅ بيانات الدرس يدويًا هنا
   const LESSON_CONTEXT = {
     isInteractiveQuiz: true,
     timelineMarkers: [
@@ -166,6 +144,14 @@
       { quizId: "QZ_002", appearAtSeconds: 210, webUrl: "https://example.com/quiz/2", isCompleted: false }
     ]
   };
+
+  function el(id){ return document.getElementById(id); }
+
+  function log(msg) {
+    const activeLog = el("page2").classList.contains("hidden") ? el("log1") : el("log2");
+    const line = `[${new Date().toLocaleTimeString()}] ${msg}\n`;
+    if (activeLog) activeLog.textContent = (activeLog.textContent + line).slice(-3000);
+  }
 
   function parseTimeToSeconds(timeStr) {
     const parts = String(timeStr || "00:00:00").split(":").map(Number);
@@ -190,6 +176,7 @@
     localStorage.setItem("isInteractiveQuiz", JSON.stringify(!!ctx.isInteractiveQuiz));
     localStorage.setItem("timelineMarkers", JSON.stringify(timeline));
     localStorage.setItem("lessonQuizzes", JSON.stringify(quizzes));
+
     return { ok: true, timeline, quizzes };
   }
 
@@ -197,82 +184,96 @@
     try {
       if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
         window.flutter_inappwebview.callHandler("lessonContextReady", payload);
+        log("✅ تم إرسال lessonContextReady لـ Flutter");
+      } else {
+        log("ℹ️ flutter_inappwebview غير موجود (تجربة متصفح عادي)");
       }
-    } catch (e) {}
+    } catch (e) {
+      log("⚠️ خطأ أثناء callHandler: " + (e && e.message ? e.message : e));
+    }
   }
 
   function setTokenBoxes() {
     const token = localStorage.getItem("authToken") || "(لا يوجد authToken)";
-    const b1 = document.getElementById("tokenBoxPage1");
-    const b2 = document.getElementById("tokenBoxPage2");
-    if (b1) b1.textContent = token;
-    if (b2) b2.textContent = token;
+    if (el("tokenBoxPage1")) el("tokenBoxPage1").textContent = token;
+    if (el("tokenBoxPage2")) el("tokenBoxPage2").textContent = token;
   }
 
   function showPage(pageNo) {
-    const p1 = document.getElementById("page1");
-    const p2 = document.getElementById("page2");
+    const p1 = el("page1");
+    const p2 = el("page2");
     if (!p1 || !p2) return;
 
     if (pageNo === 1) {
       p1.classList.remove("hidden");
       p2.classList.add("hidden");
+      log("⬅️ رجوع للصفحة 1");
     } else {
       p1.classList.add("hidden");
       p2.classList.remove("hidden");
+      log("➡️ فتح الصفحة 2");
     }
     setTokenBoxes();
   }
 
   function prepareAndGo(url) {
-    const result = writeLessonContextToLocalStorage(LESSON_CONTEXT);
+    try {
+      const result = writeLessonContextToLocalStorage(LESSON_CONTEXT);
 
-    const payload = {
-      ok: result.ok,
-      isInteractiveQuiz: LESSON_CONTEXT.isInteractiveQuiz,
-      timelineMarkers: result.timeline || [],
-      lessonQuizzes: result.quizzes || [],
-      ts: Date.now()
-    };
+      const payload = {
+        ok: result.ok,
+        isInteractiveQuiz: LESSON_CONTEXT.isInteractiveQuiz,
+        timelineMarkers: result.timeline || [],
+        lessonQuizzes: result.quizzes || [],
+        ts: Date.now()
+      };
 
-    notifyFlutterContextReady(payload);
+      log("✅ تم حفظ الداتا في localStorage");
+      log("timelineMarkers=" + localStorage.getItem("timelineMarkers"));
+      log("lessonQuizzes=" + localStorage.getItem("lessonQuizzes"));
 
-    setTimeout(() => {
-      window.location.href = url;
-    }, 60);
+      notifyFlutterContextReady(payload);
+
+      // انتقل
+      setTimeout(() => {
+        log("🚀 انتقال إلى: " + url);
+        window.location.assign(url);
+      }, 80);
+    } catch (e) {
+      log("❌ خطأ داخل prepareAndGo: " + (e && e.message ? e.message : e));
+    }
   }
 
-  document.addEventListener("DOMContentLoaded", function () {
-    // ✅ تحديث عرض التوكن
+  function bindHandlers() {
     setTokenBoxes();
+    log("✅ bindHandlers اشتغل");
 
-    // ✅ زر الانتقال للصفحة 2 (كان ناقص)
-    const goToPage2 = document.getElementById("goToPage2");
-    if (goToPage2) {
-      goToPage2.onclick = function () {
-        showPage(2);
-      };
-    }
+    const goToPage2 = el("goToPage2");
+    const backToPage1 = el("backToPage1");
+    const btnWatch = el("openYoutube");
+    const btnEmbed = el("openYoutubeEmbedDirect");
 
-    // ✅ زر الرجوع
-    const backToPage1 = document.getElementById("backToPage1");
-    if (backToPage1) {
-      backToPage1.onclick = function () {
-        showPage(1);
-      };
-    }
+    if (goToPage2) goToPage2.addEventListener("click", () => showPage(2));
+    if (backToPage1) backToPage1.addEventListener("click", () => showPage(1));
+    if (btnWatch) btnWatch.addEventListener("click", () => prepareAndGo(YOUTUBE_WATCH_URL));
+    if (btnEmbed) btnEmbed.addEventListener("click", () => prepareAndGo(YOUTUBE_EMBED_URL));
 
-    // ✅ أزرار تشغيل اليوتيوب
-    const btnWatch = document.getElementById("openYoutube");
-    const btnEmbed = document.getElementById("openYoutubeEmbedDirect");
+    if (!goToPage2) log("⚠️ زر goToPage2 غير موجود");
+  }
 
-    if (btnWatch) btnWatch.onclick = function () { prepareAndGo(YOUTUBE_WATCH_URL); };
-    if (btnEmbed) btnEmbed.onclick = function () { prepareAndGo(YOUTUBE_EMBED_URL); };
-  });
+  // ربط آمن (يشتغل في أغلب البيئات)
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bindHandlers);
+  } else {
+    bindHandlers();
+  }
+  // fallback إضافي لو بيئة WebView غريبة
+  setTimeout(() => {
+    try { bindHandlers(); } catch (_) {}
+  }, 300);
 
 })();
 </script>
-
 
 </body>
 </html>
