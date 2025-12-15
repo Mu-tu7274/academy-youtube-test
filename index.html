@@ -108,7 +108,9 @@
     <!-- الصفحة الأولى -->
     <div id="page1">
       <div class="title">تشغيل يوتيوب معنا</div>
-      <div class="subtitle">اضغط على الزر بالأسفل للانتقال إلى خطوة تشغيل الفيديو.</div>
+      <div class="subtitle">
+        اضغط على الزر بالأسفل للانتقال إلى خطوة تشغيل الفيديو.
+      </div>
 
       <div class="token-label">authToken من localStorage</div>
       <div id="tokenBoxPage1" class="token-box">جارِ تحميل التوكن...</div>
@@ -126,14 +128,14 @@
       <div class="token-label">authToken من localStorage</div>
       <div id="tokenBoxPage2" class="token-box">جارِ تحميل التوكن...</div>
 
-      <!-- زر المشاهدة العادي -->
+      <!-- زر Watch -->
       <button id="openYoutube" class="btn">
         تشغيل يوتيوب (Watch) ▶
       </button>
 
-      <!-- ✅ زر المشاهدة Embedded -->
-      <button id="openYoutubeEmbed" class="btn btn-secondary">
-        تشغيل يوتيوب (Embedded) ▶
+      <!-- ✅ زر Embed مباشر -->
+      <button id="openYoutubeEmbedDirect" class="btn btn-secondary">
+        تشغيل يوتيوب (Embedded مباشر) ▶
       </button>
 
       <button id="backToPage1" class="btn btn-secondary">
@@ -145,37 +147,12 @@
 
   <script>
     (function () {
-      const YOUTUBE_URL = "https://www.youtube.com/watch?v=xdTwodPnRzE";
 
-      function extractVideoId(url) {
-        try {
-          const u = new URL(url);
+      const YOUTUBE_WATCH_URL =
+        "https://www.youtube.com/watch?v=xdTwodPnRzE";
 
-          if (u.hostname.includes("youtu.be")) {
-            return u.pathname.replace("/", "");
-          }
-
-          const v = u.searchParams.get("v");
-          if (v) return v;
-
-          const parts = u.pathname.split("/").filter(Boolean);
-          const embedIndex = parts.indexOf("embed");
-          if (embedIndex >= 0 && parts[embedIndex + 1]) {
-            return parts[embedIndex + 1];
-          }
-
-          return "";
-        } catch {
-          return "";
-        }
-      }
-
-      function buildEmbedUrl(url) {
-        const id = extractVideoId(url);
-        return id
-          ? `https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1`
-          : "";
-      }
+      const YOUTUBE_EMBED_URL =
+        "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&playsinline=1";
 
       function showTokenIn(elementId) {
         const box = document.getElementById(elementId);
@@ -195,26 +172,21 @@
         const page1 = document.getElementById("page1");
         const page2 = document.getElementById("page2");
 
-        document.getElementById("goToPage2").onclick = () => {
+        document.getElementById("goToPage2").onclick = function () {
           page1.classList.add("hidden");
           page2.classList.remove("hidden");
           showTokenIn("tokenBoxPage2");
         };
 
-        document.getElementById("openYoutube").onclick = () => {
-          window.location.href = YOUTUBE_URL;
+        document.getElementById("openYoutube").onclick = function () {
+          window.location.href = YOUTUBE_WATCH_URL;
         };
 
-        document.getElementById("openYoutubeEmbed").onclick = () => {
-          const embedUrl = buildEmbedUrl(YOUTUBE_URL);
-          if (!embedUrl) {
-            alert("تعذر إنشاء رابط Embedded");
-            return;
-          }
-          window.location.href = embedUrl;
+        document.getElementById("openYoutubeEmbedDirect").onclick = function () {
+          window.location.href = YOUTUBE_EMBED_URL;
         };
 
-        document.getElementById("backToPage1").onclick = () => {
+        document.getElementById("backToPage1").onclick = function () {
           page2.classList.add("hidden");
           page1.classList.remove("hidden");
         };
