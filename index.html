@@ -15,9 +15,7 @@
       --text-muted: #a8a8c0;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -45,7 +43,6 @@
     .title {
       font-size: 18px;
       font-weight: 600;
-      letter-spacing: 0.02em;
       margin-bottom: 8px;
       text-align: center;
     }
@@ -71,7 +68,6 @@
       border: 1px solid var(--border-soft);
       padding: 8px 10px;
       font-size: 12px;
-      color: var(--text-main);
       line-height: 1.5;
       overflow-wrap: break-word;
     }
@@ -81,15 +77,13 @@
       width: 100%;
       border-radius: 999px;
       border: none;
-      outline: none;
       font-size: 14px;
       padding: 10px 16px;
-      display: inline-flex;
+      display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
       cursor: pointer;
-      white-space: nowrap;
       background: linear-gradient(135deg, var(--accent), var(--accent-strong));
       color: #050816;
       font-weight: 600;
@@ -104,110 +98,128 @@
       box-shadow: none;
     }
 
-    .hidden {
-      display: none;
-    }
+    .hidden { display: none; }
   </style>
 </head>
+
 <body>
   <div class="shell">
 
     <!-- الصفحة الأولى -->
     <div id="page1">
       <div class="title">تشغيل يوتيوب معنا</div>
-      <div class="subtitle">
-        اضغط على الزر بالأسفل للانتقال إلى خطوة تشغيل الفيديو.
-      </div>
+      <div class="subtitle">اضغط على الزر بالأسفل للانتقال إلى خطوة تشغيل الفيديو.</div>
 
       <div class="token-label">authToken من localStorage</div>
-      <div id="tokenBoxPage1" class="token-box">
-        جارِ تحميل التوكن...
-      </div>
+      <div id="tokenBoxPage1" class="token-box">جارِ تحميل التوكن...</div>
 
       <button id="goToPage2" class="btn">
-        اضغط هنا لتشغيل يوتيوب معنا
-        <span style="font-size: 18px;">▶</span>
+        اضغط هنا لتشغيل يوتيوب معنا ▶
       </button>
     </div>
 
     <!-- الصفحة الثانية -->
     <div id="page2" class="hidden">
       <div class="title">خطوة تشغيل الفيديو</div>
-      <div class="subtitle">
-        الآن يمكنك تشغيل الفيديو على يوتيوب في نفس الشاشة.
-      </div>
+      <div class="subtitle">اختر طريقة تشغيل الفيديو</div>
 
       <div class="token-label">authToken من localStorage</div>
-      <div id="tokenBoxPage2" class="token-box">
-        جارِ تحميل التوكن...
-      </div>
+      <div id="tokenBoxPage2" class="token-box">جارِ تحميل التوكن...</div>
 
+      <!-- زر المشاهدة العادي -->
       <button id="openYoutube" class="btn">
-        اضغط الآن لتشغيل الفيديو
-        <span style="font-size: 18px;">▶</span>
+        تشغيل يوتيوب (Watch) ▶
+      </button>
+
+      <!-- ✅ زر المشاهدة Embedded -->
+      <button id="openYoutubeEmbed" class="btn btn-secondary">
+        تشغيل يوتيوب (Embedded) ▶
       </button>
 
       <button id="backToPage1" class="btn btn-secondary">
         رجوع للصفحة السابقة
       </button>
     </div>
+
   </div>
 
   <script>
     (function () {
-      // غيّر هذا المتغيّر لرابط يوتيوب الذي تريد فتحه:
       const YOUTUBE_URL = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
 
-      // دالة تعرض التوكن في العنصر المطلوب
+      function extractVideoId(url) {
+        try {
+          const u = new URL(url);
+
+          if (u.hostname.includes("youtu.be")) {
+            return u.pathname.replace("/", "");
+          }
+
+          const v = u.searchParams.get("v");
+          if (v) return v;
+
+          const parts = u.pathname.split("/").filter(Boolean);
+          const embedIndex = parts.indexOf("embed");
+          if (embedIndex >= 0 && parts[embedIndex + 1]) {
+            return parts[embedIndex + 1];
+          }
+
+          return "";
+        } catch {
+          return "";
+        }
+      }
+
+      function buildEmbedUrl(url) {
+        const id = extractVideoId(url);
+        return id
+          ? `https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1`
+          : "";
+      }
+
       function showTokenIn(elementId) {
-        var box = document.getElementById(elementId);
+        const box = document.getElementById(elementId);
         if (!box) return;
 
-        var tokenText = "";
         try {
-          var token = localStorage.getItem("authToken");
-          if (token) {
-            tokenText = "authToken: " + token;
-          } else {
-            tokenText = "لا يوجد authToken في localStorage.";
-          }
+          const token = localStorage.getItem("authToken");
+          box.textContent = token
+            ? "authToken: " + token
+            : "لا يوجد authToken في localStorage.";
         } catch (e) {
-          tokenText = "خطأ أثناء قراءة localStorage: " + e;
+          box.textContent = "خطأ أثناء قراءة localStorage";
         }
-        box.textContent = tokenText;
       }
 
       document.addEventListener("DOMContentLoaded", function () {
-        var page1 = document.getElementById("page1");
-        var page2 = document.getElementById("page2");
+        const page1 = document.getElementById("page1");
+        const page2 = document.getElementById("page2");
 
-        var goToPage2Btn = document.getElementById("goToPage2");
-        var openYoutubeBtn = document.getElementById("openYoutube");
-        var backToPage1Btn = document.getElementById("backToPage1");
-
-        // عرض التوكن في الصفحة الأولى عند التحميل
-        showTokenIn("tokenBoxPage1");
-
-        // عند الضغط على زر الانتقال للصفحة الثانية
-        goToPage2Btn.addEventListener("click", function () {
-          // إظهار الصفحة الثانية وإخفاء الأولى
+        document.getElementById("goToPage2").onclick = () => {
           page1.classList.add("hidden");
           page2.classList.remove("hidden");
-
-          // عرض التوكن في الصفحة الثانية أيضًا
           showTokenIn("tokenBoxPage2");
-        });
+        };
 
-        // زر تشغيل الفيديو: يفتح يوتيوب في نفس الـ WebView
-        openYoutubeBtn.addEventListener("click", function () {
+        document.getElementById("openYoutube").onclick = () => {
           window.location.href = YOUTUBE_URL;
-        });
+        };
 
-        // زر الرجوع: يرجع للصفحة الأولى بدون إعادة تحميل
-        backToPage1Btn.addEventListener("click", function () {
+        document.getElementById("openYoutubeEmbed").onclick = () => {
+          const embedUrl = buildEmbedUrl(YOUTUBE_URL);
+          if (!embedUrl) {
+            alert("تعذر إنشاء رابط Embedded");
+            return;
+          }
+          window.location.href = embedUrl;
+        };
+
+        document.getElementById("backToPage1").onclick = () => {
           page2.classList.add("hidden");
           page1.classList.remove("hidden");
-        });
+        };
+
+        showTokenIn("tokenBoxPage1");
       });
     })();
   </script>
