@@ -27,7 +27,6 @@
       padding: 16px;
     }
     .shell {
-      position: relative; /* ✅ مهم عشان زر الكلاسيك يثبت جوه الكارد */
       width: 100%;
       max-width: 520px;
       border-radius: 20px;
@@ -35,7 +34,6 @@
       box-shadow: 0 20px 45px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.05);
       padding: 20px 18px 18px;
     }
-
     .title { font-size: 18px; font-weight: 600; margin-bottom: 8px; text-align: center; }
     .subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; text-align: center; }
     .token-label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
@@ -90,31 +88,11 @@
       overflow: auto;
       white-space: pre-wrap;
     }
-
-    /* ✅ زر الوضع الكلاسيكي */
-    .classic-btn{
-      position: absolute;
-      top: 14px;
-      right: 14px;
-      z-index: 10;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.16);
-      background: rgba(0,0,0,0.25);
-      color: var(--text-main);
-      font-size: 12px;
-      padding: 8px 12px;
-      cursor: pointer;
-      backdrop-filter: blur(6px);
-    }
-    .classic-btn:active { transform: scale(0.98); }
   </style>
 </head>
 
 <body>
   <div class="shell">
-
-    <!-- ✅ زر الوضع الكلاسيكي (أعلى يمين) -->
-    <button id="classicModeBtn" class="classic-btn" type="button">الوضع الكلاسيكي</button>
 
     <!-- الصفحة الأولى -->
     <div id="page1">
@@ -215,20 +193,6 @@
     }
   }
 
-  /* ✅ إرسال حدث classicMode لـ Flutter */
-  function notifyFlutterClassicMode(payload) {
-    try {
-      if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
-        window.flutter_inappwebview.callHandler("classicMode", payload);
-        log("✅ تم إرسال classicMode لـ Flutter");
-      } else {
-        log("ℹ️ flutter_inappwebview غير موجود (تجربة متصفح عادي)");
-      }
-    } catch (e) {
-      log("⚠️ خطأ أثناء classicMode callHandler: " + (e && e.message ? e.message : e));
-    }
-  }
-
   function setTokenBoxes() {
     const token = localStorage.getItem("authToken") || "(لا يوجد authToken)";
     if (el("tokenBoxPage1")) el("tokenBoxPage1").textContent = token;
@@ -284,28 +248,10 @@
     setTokenBoxes();
     log("✅ bindHandlers اشتغل");
 
-    const classicBtn = el("classicModeBtn");
     const goToPage2 = el("goToPage2");
     const backToPage1 = el("backToPage1");
     const btnWatch = el("openYoutube");
     const btnEmbed = el("openYoutubeEmbedDirect");
-
-    // ✅ زر الكلاسيك مود
-    if (classicBtn) {
-      classicBtn.addEventListener("click", () => {
-        try {
-          localStorage.setItem("classic_mode", "true");
-          log("✅ classic_mode=true saved to localStorage");
-
-          // إخطار Flutter فورًا (أفضل من polling)
-          notifyFlutterClassicMode({ classic_mode: true, ts: Date.now() });
-        } catch (e) {
-          log("❌ classic mode error: " + (e && e.message ? e.message : e));
-        }
-      });
-    } else {
-      log("⚠️ زر classicModeBtn غير موجود");
-    }
 
     if (goToPage2) goToPage2.addEventListener("click", () => showPage(2));
     if (backToPage1) backToPage1.addEventListener("click", () => showPage(1));
@@ -321,7 +267,6 @@
   } else {
     bindHandlers();
   }
-
   // fallback إضافي لو بيئة WebView غريبة
   setTimeout(() => {
     try { bindHandlers(); } catch (_) {}
