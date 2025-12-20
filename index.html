@@ -4,15 +4,59 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>كل روابط URL</title>
-  <style>
-    body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;margin:0;padding:16px;background:#050816;color:#f5f5f5}
-    .card{max-width:980px;margin:auto;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:14px}
-    h1{margin:0 0 10px;font-size:18px}
-    .item{display:flex;gap:10px;align-items:center;flex-wrap:wrap;border:1px solid rgba(255,255,255,.10);border-radius:12px;padding:10px;margin:10px 0;background:rgba(0,0,0,.18)}
-    a{color:#ffb347;text-decoration:none;word-break:break-all;direction:ltr;text-align:left;flex:1}
-    button{border-radius:999px;border:1px solid rgba(255,255,255,.14);background:transparent;color:#f5f5f5;padding:8px 12px;cursor:pointer}
-    .muted{color:#a8a8c0;font-size:12px;margin-top:8px}
-  </style>
+<style>
+  body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;margin:0;padding:12px;background:#050816;color:#f5f5f5}
+  .card{max-width:980px;margin:auto;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px}
+  h1{margin:0 0 10px;font-size:16px}
+
+  /* ✅ كل صف يبقى سطر واحد، واللينك هو اللي يعمل سكرول أفقي */
+  .item{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:12px;
+    padding:8px;
+    margin:8px 0;
+    background:rgba(0,0,0,.18);
+    flex-wrap:nowrap;     /* مهم */
+    overflow:hidden;      /* مهم */
+  }
+
+  /* ✅ اللينك يبقى داخل “شريط” صغير قابل للسكرول */
+  a{
+    color:#ffb347;
+    text-decoration:none;
+    direction:ltr;
+    text-align:left;
+
+    flex:1;
+    min-width:0;          /* مهم مع flex */
+    white-space:nowrap;   /* سطر واحد */
+    overflow-x:auto;      /* سكرول أفقي داخل اللينك */
+    overflow-y:hidden;
+    text-overflow:ellipsis;
+    -webkit-overflow-scrolling:touch; /* سكرول ناعم على iOS */
+    padding:6px 8px;
+    border-radius:10px;
+    background:rgba(255,255,255,.06);
+  }
+
+  /* يخفي شكل السكرول بار لو تحب */
+  a::-webkit-scrollbar{height:0}
+
+  button{
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,.14);
+    background:transparent;
+    color:#f5f5f5;
+    padding:7px 10px;
+    cursor:pointer;
+    flex:0 0 auto;
+  }
+
+  .muted{color:#a8a8c0;font-size:12px;margin-top:8px}
+</style>
 </head>
 <body>
   <div class="card">
