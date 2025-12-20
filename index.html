@@ -1,200 +1,370 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8" />
-<title>YouTube Fetch Flow</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8" />
+  <title>تشغيل يوتيوب + Fetch عبر Flutter</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<style>
-:root{
-  --bg:#050816;
-  --card:#0b0f2a;
-  --border:rgba(255,255,255,.15);
-  --accent:#ffb347;
-  --accent2:#ff6b3d;
-  --text:#f5f5f5;
-  --muted:#a8a8c0;
-}
-*{box-sizing:border-box}
-body{
-  margin:0;
-  min-height:100vh;
-  background:var(--bg);
-  color:var(--text);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-family:system-ui;
-}
-.shell{
-  width:100%;
-  max-width:520px;
-  background:var(--card);
-  border-radius:20px;
-  padding:18px;
-  box-shadow:0 20px 40px rgba(0,0,0,.7);
-}
-.hidden{display:none}
-.title{text-align:center;font-size:18px;font-weight:600}
-.subtitle{text-align:center;font-size:13px;color:var(--muted);margin-bottom:16px}
-.btn{
-  width:100%;
-  border:none;
-  border-radius:999px;
-  padding:10px;
-  margin-top:12px;
-  font-weight:600;
-  cursor:pointer;
-  background:linear-gradient(135deg,var(--accent),var(--accent2));
-}
-.btn-secondary{
-  background:transparent;
-  color:var(--text);
-  border:1px solid var(--border);
-}
-.log{
-  margin-top:12px;
-  font-size:12px;
-  background:#00000040;
-  border:1px dashed var(--border);
-  border-radius:12px;
-  padding:10px;
-  max-height:140px;
-  overflow:auto;
-  white-space:pre-wrap;
-}
-.loader{
-  margin:20px auto;
-  width:42px;
-  height:42px;
-  border-radius:50%;
-  border:4px solid #ffffff30;
-  border-top-color:var(--accent);
-  animation:spin 1s linear infinite;
-}
-@keyframes spin{to{transform:rotate(360deg)}}
-pre{
-  background:#00000050;
-  border-radius:12px;
-  padding:10px;
-  font-size:12px;
-  max-height:280px;
-  overflow:auto;
-  direction:ltr;
-}
-</style>
+  <style>
+    :root {
+      --bg-main: #050816;
+      --bg-card: radial-gradient(circle at top, #1f1f49 0, #050816 40%, #02030a 100%);
+      --border-soft: rgba(255, 255, 255, 0.12);
+      --accent: #ffb347;
+      --accent-strong: #ff6b3d;
+      --text-main: #f5f5f5;
+      --text-muted: #a8a8c0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg-main);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .shell {
+      position: relative;
+      width: 100%;
+      max-width: 560px;
+      border-radius: 20px;
+      background: var(--bg-card);
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.05);
+      padding: 20px 18px 18px;
+    }
+
+    .title { font-size: 18px; font-weight: 700; margin-bottom: 8px; text-align: center; }
+    .subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; text-align: center; }
+
+    .token-label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+    .token-box {
+      width: 100%;
+      min-height: 54px;
+      border-radius: 14px;
+      background: rgba(3, 7, 30, 0.9);
+      border: 1px solid var(--border-soft);
+      padding: 8px 10px;
+      font-size: 12px;
+      line-height: 1.5;
+      overflow-wrap: break-word;
+    }
+
+    .btn {
+      margin-top: 12px;
+      width: 100%;
+      border-radius: 999px;
+      border: none;
+      font-size: 14px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      color: #050816;
+      font-weight: 700;
+      box-shadow: 0 10px 24px rgba(255, 107, 61, 0.35);
+    }
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-main);
+      border: 1px solid var(--border-soft);
+      box-shadow: none;
+      font-weight: 600;
+    }
+    .hidden { display: none; }
+
+    .log {
+      margin-top: 12px;
+      font-size: 12px;
+      color: #cfcfe6;
+      opacity: 0.9;
+      border: 1px dashed rgba(255,255,255,0.18);
+      border-radius: 12px;
+      padding: 10px;
+      background: rgba(0,0,0,0.18);
+      max-height: 160px;
+      overflow: auto;
+      white-space: pre-wrap;
+    }
+
+    .classic-btn{
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      z-index: 10;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(0,0,0,0.25);
+      color: var(--text-main);
+      font-size: 12px;
+      padding: 8px 12px;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+    }
+    .classic-btn:active { transform: scale(0.98); }
+
+    /* صفحة عرض النتيجة */
+    .result-box {
+      margin-top: 12px;
+      border-radius: 14px;
+      background: rgba(3, 7, 30, 0.65);
+      border: 1px solid var(--border-soft);
+      padding: 10px;
+    }
+    .result-title {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    pre.json-viewer {
+      margin: 0;
+      font-size: 12px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 280px;
+      overflow: auto;
+      direction: ltr;
+      text-align: left;
+      color: #eaeaff;
+    }
+
+    .loader {
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 3px solid rgba(255,255,255,0.18);
+      border-top-color: rgba(255,255,255,0.85);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
 </head>
 
 <body>
-<div class="shell">
+  <div class="shell">
 
-<!-- PAGE 1 -->
-<div id="page1">
-  <div class="title">تشغيل يوتيوب معنا</div>
-  <div class="subtitle">الانتقال للخطوة التالية</div>
-  <button id="goPage2" class="btn">التالي ▶</button>
-  <div id="log1" class="log"></div>
-</div>
+    <button id="classicModeBtn" class="classic-btn" type="button">الوضع الكلاسيكي</button>
 
-<!-- PAGE 2 -->
-<div id="page2" class="hidden">
-  <div class="title">اختيار العملية</div>
-  <div class="subtitle">تشغيل الفيديو أو جلب بياناته</div>
+    <!-- PAGE 1 -->
+    <div id="page1">
+      <div class="title">تشغيل يوتيوب معنا</div>
+      <div class="subtitle">اضغط للانتقال لخطوة التشغيل / الفيتش.</div>
 
-  <button id="openWatch" class="btn">تشغيل يوتيوب ▶</button>
-  <button id="goFetchPage" class="btn btn-secondary">جلب بيانات الفيديو 📥</button>
-  <button id="back1" class="btn btn-secondary">رجوع</button>
+      <div class="token-label">authToken من localStorage</div>
+      <div id="tokenBoxPage1" class="token-box">جارِ تحميل التوكن...</div>
 
-  <div id="log2" class="log"></div>
-</div>
+      <button id="goToPage2" class="btn">التالي ▶</button>
+      <div id="log1" class="log"></div>
+    </div>
 
-<!-- PAGE 3 -->
-<div id="page3" class="hidden">
-  <div class="title">جلب بيانات الفيديو</div>
-  <div class="subtitle">يتم الآن الاتصال بـ downr</div>
+    <!-- PAGE 2 -->
+    <div id="page2" class="hidden">
+      <div class="title">خطوة التشغيل</div>
+      <div class="subtitle">اختر تشغيل الفيديو أو جلب بياناته عبر Flutter</div>
 
-  <div id="loader" class="loader"></div>
+      <div class="token-label">authToken من localStorage</div>
+      <div id="tokenBoxPage2" class="token-box">جارِ تحميل التوكن...</div>
 
-  <pre id="fetchResult" class="hidden"></pre>
+      <button id="openYoutube" class="btn">تشغيل يوتيوب (Watch) ▶</button>
+      <button id="openYoutubeEmbedDirect" class="btn btn-secondary">تشغيل يوتيوب (Embedded مباشر) ▶</button>
 
-  <button id="back2" class="btn btn-secondary">رجوع</button>
+      <!-- ✅ الزر اللي بينقلك لصفحة الفيتش -->
+      <button id="goToFetchPage" class="btn btn-secondary">جلب بيانات الفيديو (Flutter) 📥</button>
 
-  <div id="log3" class="log"></div>
-</div>
+      <button id="backToPage1" class="btn btn-secondary">رجوع</button>
+      <div id="log2" class="log"></div>
+    </div>
 
-</div>
+    <!-- PAGE 3: Fetch via Flutter -->
+    <div id="page3" class="hidden">
+      <div class="title">جلب بيانات الفيديو</div>
+      <div class="subtitle">سيتم عمل الفيتش عبر Flutter لتجنب CORS</div>
+
+      <div class="loader" id="loader">
+        <span class="spinner"></span>
+        <span>جارِ جلب البيانات...</span>
+      </div>
+
+      <div id="fetchResultBox" class="result-box hidden">
+        <div class="result-title">نتيجة الفيتش</div>
+        <pre id="fetchResultPre" class="json-viewer"></pre>
+      </div>
+
+      <button id="retryFetch" class="btn btn-secondary">إعادة المحاولة 🔁</button>
+      <button id="backToPage2" class="btn btn-secondary">رجوع</button>
+
+      <div id="log3" class="log"></div>
+    </div>
+
+  </div>
 
 <script>
-(() => {
-"use strict";
+(function () {
+  "use strict";
 
-const YOUTUBE_URL = "https://www.youtube.com/watch?v=m-VVub8Jp_w";
-const DOWNR_URL = "https://downr.org/.netlify/functions/download";
+  const YOUTUBE_WATCH_URL = "https://www.youtube.com/watch?v=m-VVub8Jp_w";
+  const YOUTUBE_EMBED_URL = "https://www.youtube.com/embed/m-VVub8Jp_w?autoplay=1&playsinline=1";
 
-const el = id => document.getElementById(id);
+  function el(id){ return document.getElementById(id); }
 
-function log(msg){
-  const page =
-    !el("page3").classList.contains("hidden") ? el("log3") :
-    !el("page2").classList.contains("hidden") ? el("log2") :
-    el("log1");
+  function activeLogEl() {
+    if (!el("page3").classList.contains("hidden")) return el("log3");
+    if (!el("page2").classList.contains("hidden")) return el("log2");
+    return el("log1");
+  }
 
-  page.textContent += `[${new Date().toLocaleTimeString()}] ${msg}\n`;
-}
+  function log(msg) {
+    const box = activeLogEl();
+    const line = `[${new Date().toLocaleTimeString()}] ${msg}\n`;
+    if (box) box.textContent = (box.textContent + line).slice(-4000);
+  }
 
-function showPage(n){
-  ["page1","page2","page3"].forEach(p=>el(p).classList.add("hidden"));
-  el("page"+n).classList.remove("hidden");
-  log("➡️ فتح الصفحة " + n);
-}
+  function setTokenBoxes() {
+    const token = localStorage.getItem("authToken") || "(لا يوجد authToken)";
+    if (el("tokenBoxPage1")) el("tokenBoxPage1").textContent = token;
+    if (el("tokenBoxPage2")) el("tokenBoxPage2").textContent = token;
+  }
 
-async function fetchDownr(){
-  el("loader").classList.remove("hidden");
-  el("fetchResult").classList.add("hidden");
-  el("fetchResult").textContent = "";
+  function showPage(n) {
+    ["page1","page2","page3"].forEach(id => el(id).classList.add("hidden"));
+    el("page" + n).classList.remove("hidden");
+    setTokenBoxes();
+    log("➡️ فتح الصفحة " + n);
+  }
 
-  try{
-    log("📡 POST → downr");
-    const res = await fetch(DOWNR_URL,{
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body:JSON.stringify({ url:YOUTUBE_URL })
+  /* classic mode -> Flutter */
+  function notifyFlutterClassicMode(payload) {
+    try {
+      if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
+        window.flutter_inappwebview.callHandler("classicMode", payload);
+        log("✅ تم إرسال classicMode لـ Flutter");
+      } else {
+        log("ℹ️ flutter_inappwebview غير موجود (تجربة متصفح عادي)");
+      }
+    } catch (e) {
+      log("⚠️ classicMode error: " + (e && e.message ? e.message : e));
+    }
+  }
+
+  /* ✅ Fetch عبر Flutter handler: fetchDownr */
+  async function fetchDownrViaFlutter(url) {
+    const loader = el("loader");
+    const box = el("fetchResultBox");
+    const pre = el("fetchResultPre");
+
+    if (loader) loader.classList.remove("hidden");
+    if (box) box.classList.add("hidden");
+    if (pre) pre.textContent = "";
+
+    try {
+      if (!(window.flutter_inappwebview && window.flutter_inappwebview.callHandler)) {
+        log("❌ لا يوجد flutter_inappwebview.callHandler — هذه الصفحة تحتاج WebView داخل Flutter");
+        if (loader) loader.classList.add("hidden");
+        if (box) box.classList.remove("hidden");
+        if (pre) pre.textContent = JSON.stringify({
+          ok: false,
+          error: "flutter_inappwebview.callHandler not available"
+        }, null, 2);
+        return;
+      }
+
+      log("📡 طلب fetchDownr من Flutter...");
+      const result = await window.flutter_inappwebview.callHandler("fetchDownr", { url });
+
+      log("✅ Flutter رجّع نتيجة");
+      if (loader) loader.classList.add("hidden");
+      if (box) box.classList.remove("hidden");
+
+      // اعرض النتيجة
+      if (pre) pre.textContent = JSON.stringify(result, null, 2);
+
+    } catch (e) {
+      log("❌ خطأ أثناء callHandler(fetchDownr): " + (e && e.message ? e.message : e));
+      if (loader) loader.classList.add("hidden");
+      if (box) box.classList.remove("hidden");
+      if (pre) pre.textContent = JSON.stringify({
+        ok: false,
+        error: (e && e.message) ? e.message : String(e)
+      }, null, 2);
+    }
+  }
+
+  function bindHandlers() {
+    setTokenBoxes();
+    log("✅ bindHandlers اشتغل");
+
+    const classicBtn = el("classicModeBtn");
+    const goToPage2 = el("goToPage2");
+    const backToPage1 = el("backToPage1");
+    const backToPage2 = el("backToPage2");
+    const btnWatch = el("openYoutube");
+    const btnEmbed = el("openYoutubeEmbedDirect");
+    const goFetchPage = el("goToFetchPage");
+    const retryFetch = el("retryFetch");
+
+    if (classicBtn) {
+      classicBtn.addEventListener("click", () => {
+        try {
+          localStorage.setItem("classic_mode", "true");
+          log("✅ classic_mode=true saved to localStorage");
+          notifyFlutterClassicMode({ classic_mode: true, ts: Date.now() });
+        } catch (e) {
+          log("❌ classic mode error: " + (e && e.message ? e.message : e));
+        }
+      });
+    }
+
+    if (goToPage2) goToPage2.addEventListener("click", () => showPage(2));
+    if (backToPage1) backToPage1.addEventListener("click", () => showPage(1));
+    if (backToPage2) backToPage2.addEventListener("click", () => showPage(2));
+
+    if (btnWatch) btnWatch.addEventListener("click", () => {
+      log("🚀 انتقال إلى Watch: " + YOUTUBE_WATCH_URL);
+      window.location.assign(YOUTUBE_WATCH_URL);
     });
 
-    const text = await res.text();
-    let data;
-    try{ data = JSON.parse(text); }catch{ data = text; }
+    if (btnEmbed) btnEmbed.addEventListener("click", () => {
+      log("🚀 انتقال إلى Embed: " + YOUTUBE_EMBED_URL);
+      window.location.assign(YOUTUBE_EMBED_URL);
+    });
 
-    el("loader").classList.add("hidden");
-    el("fetchResult").classList.remove("hidden");
-    el("fetchResult").textContent =
-      JSON.stringify({ status:res.status, data },null,2);
+    // ✅ زر يفتح صفحة 3 ويبدأ الفيتش تلقائي
+    if (goFetchPage) goFetchPage.addEventListener("click", () => {
+      showPage(3);
+      fetchDownrViaFlutter(YOUTUBE_WATCH_URL);
+    });
 
-    log("✅ تم جلب البيانات بنجاح");
-
-  }catch(e){
-    el("loader").classList.add("hidden");
-    el("fetchResult").classList.remove("hidden");
-    el("fetchResult").textContent =
-      JSON.stringify({ error:e.message || e },null,2);
-    log("❌ خطأ أثناء الفيتش");
+    // ✅ Retry
+    if (retryFetch) retryFetch.addEventListener("click", () => {
+      showPage(3);
+      fetchDownrViaFlutter(YOUTUBE_WATCH_URL);
+    });
   }
-}
 
-/* EVENTS */
-el("goPage2").onclick = ()=> showPage(2);
-el("back1").onclick = ()=> showPage(1);
-el("back2").onclick = ()=> showPage(2);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bindHandlers);
+  } else {
+    bindHandlers();
+  }
 
-el("openWatch").onclick = ()=>{
-  log("🚀 فتح يوتيوب");
-  window.location.assign(YOUTUBE_URL);
-};
-
-el("goFetchPage").onclick = ()=>{
-  showPage(3);
-  fetchDownr(); // ✅ يبدأ الفيتش تلقائي
-};
+  // fallback
+  setTimeout(() => { try { bindHandlers(); } catch(_) {} }, 250);
 
 })();
 </script>
