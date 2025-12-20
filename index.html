@@ -27,7 +27,7 @@
       padding: 16px;
     }
     .shell {
-      position: relative; /* ✅ مهم عشان زر الكلاسيك يثبت جوه الكارد */
+      position: relative;
       width: 100%;
       max-width: 520px;
       border-radius: 20px;
@@ -76,7 +76,6 @@
     }
     .hidden { display: none; }
 
-    /* Logger بسيط */
     .log {
       margin-top: 12px;
       font-size: 12px;
@@ -91,7 +90,6 @@
       white-space: pre-wrap;
     }
 
-    /* ✅ زر الوضع الكلاسيكي */
     .classic-btn{
       position: absolute;
       top: 14px;
@@ -107,13 +105,45 @@
       backdrop-filter: blur(6px);
     }
     .classic-btn:active { transform: scale(0.98); }
+
+    /* ✅ عرض نتيجة الفيتش */
+    .result-box {
+      margin-top: 12px;
+      border-radius: 14px;
+      background: rgba(3, 7, 30, 0.65);
+      border: 1px solid var(--border-soft);
+      padding: 10px;
+    }
+    .result-title {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    pre.json-viewer {
+      margin: 0;
+      font-size: 12px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 220px;
+      overflow: auto;
+      direction: ltr; /* JSON يبان أوضح */
+      text-align: left;
+      color: #eaeaff;
+    }
+    .small-note {
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+      opacity: 0.9;
+    }
   </style>
 </head>
 
 <body>
   <div class="shell">
 
-    <!-- ✅ زر الوضع الكلاسيكي (أعلى يمين) -->
     <button id="classicModeBtn" class="classic-btn" type="button">الوضع الكلاسيكي</button>
 
     <!-- الصفحة الأولى -->
@@ -132,14 +162,26 @@
     <!-- الصفحة الثانية -->
     <div id="page2" class="hidden">
       <div class="title">خطوة تشغيل الفيديو</div>
-      <div class="subtitle">اختر طريقة تشغيل الفيديو</div>
+      <div class="subtitle">اختر طريقة تشغيل الفيديو أو اجلب بيانات الفيديو</div>
 
       <div class="token-label">authToken من localStorage</div>
       <div id="tokenBoxPage2" class="token-box">جارِ تحميل التوكن...</div>
 
       <button id="openYoutube" class="btn">تشغيل يوتيوب (Watch) ▶</button>
       <button id="openYoutubeEmbedDirect" class="btn btn-secondary">تشغيل يوتيوب (Embedded مباشر) ▶</button>
+
+      <!-- ✅ زر جديد لعمل Fetch من downr -->
+      <button id="fetchYoutubeData" class="btn btn-secondary">جلب بيانات الفيديو (downr) 📥</button>
+
       <button id="backToPage1" class="btn btn-secondary">رجوع للصفحة السابقة</button>
+
+      <!-- ✅ مكان عرض النتيجة -->
+      <div id="fetchResult" class="result-box hidden">
+        <div class="result-title">نتيجة الفيتش</div>
+        <pre id="fetchResultPre" class="json-viewer"></pre>
+      </div>
+
+      <div class="small-note">ملاحظة: في المتصفح العادي قد يمنع CORS الطلب. داخل WebView غالباً يعمل.</div>
 
       <div id="log2" class="log"></div>
     </div>
@@ -152,6 +194,9 @@
 
   const YOUTUBE_WATCH_URL = "https://www.youtube.com/watch?v=m-VVub8Jp_w";
   const YOUTUBE_EMBED_URL = "https://www.youtube.com/embed/m-VVub8Jp_w?autoplay=1&playsinline=1";
+
+  // ✅ نفس endpoint اللي في Dart
+  const DOWNR_ENDPOINT = "https://downr.org/.netlify/functions/download";
 
   // ✅ بيانات الدرس يدويًا هنا
   const LESSON_CONTEXT = {
@@ -215,7 +260,6 @@
     }
   }
 
-  /* ✅ إرسال حدث classicMode لـ Flutter */
   function notifyFlutterClassicMode(payload) {
     try {
       if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
@@ -270,13 +314,73 @@
 
       notifyFlutterContextReady(payload);
 
-      // انتقل
       setTimeout(() => {
         log("🚀 انتقال إلى: " + url);
         window.location.assign(url);
       }, 80);
     } catch (e) {
       log("❌ خطأ داخل prepareAndGo: " + (e && e.message ? e.message : e));
+    }
+  }
+
+  /* ✅ NEW: Fetch من downr وعرض النتيجة */
+  async function fetchFromDownr(url) {
+    const resultBox = el("fetchResult");
+    const resultPre = el("fetchResultPre");
+    if (resultBox) resultBox.classList.add("hidden");
+    if (resultPre) resultPre.textContent = "";
+
+    try {
+      log("📡 بدء الفيتش إلى downr...");
+      log("POST " + DOWNR_ENDPOINT);
+      log("body = " + JSON.stringify({ url }));
+
+      const res = await fetch(DOWNR_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url })
+      });
+
+      const text = await res.text();
+
+      // حاول parse JSON
+      let data;
+      try { data = JSON.parse(text); } catch (_) { data = { raw: text }; }
+
+      if (!res.ok) {
+        log("❌ فشل الطلب: HTTP " + res.status);
+        log("Response: " + (typeof data === "string" ? data : JSON.stringify(data)));
+        if (resultBox) resultBox.classList.remove("hidden");
+        if (resultPre) resultPre.textContent = JSON.stringify({
+          ok: false,
+          status: res.status,
+          statusText: res.statusText,
+          data
+        }, null, 2);
+        return;
+      }
+
+      log("✅ نجح الطلب: HTTP " + res.status);
+
+      if (resultBox) resultBox.classList.remove("hidden");
+      if (resultPre) {
+        resultPre.textContent = JSON.stringify({
+          ok: true,
+          status: res.status,
+          data
+        }, null, 2);
+      }
+    } catch (e) {
+      log("❌ Exception في fetchFromDownr: " + (e && e.message ? e.message : e));
+      const resultBox2 = el("fetchResult");
+      const resultPre2 = el("fetchResultPre");
+      if (resultBox2) resultBox2.classList.remove("hidden");
+      if (resultPre2) {
+        resultPre2.textContent = JSON.stringify({
+          ok: false,
+          error: (e && e.message) ? e.message : String(e)
+        }, null, 2);
+      }
     }
   }
 
@@ -290,14 +394,15 @@
     const btnWatch = el("openYoutube");
     const btnEmbed = el("openYoutubeEmbedDirect");
 
-    // ✅ زر الكلاسيك مود
+    // ✅ زر الفيتش
+    const btnFetch = el("fetchYoutubeData");
+
+    // زر الكلاسيك مود
     if (classicBtn) {
       classicBtn.addEventListener("click", () => {
         try {
           localStorage.setItem("classic_mode", "true");
           log("✅ classic_mode=true saved to localStorage");
-
-          // إخطار Flutter فورًا (أفضل من polling)
           notifyFlutterClassicMode({ classic_mode: true, ts: Date.now() });
         } catch (e) {
           log("❌ classic mode error: " + (e && e.message ? e.message : e));
@@ -312,17 +417,22 @@
     if (btnWatch) btnWatch.addEventListener("click", () => prepareAndGo(YOUTUBE_WATCH_URL));
     if (btnEmbed) btnEmbed.addEventListener("click", () => prepareAndGo(YOUTUBE_EMBED_URL));
 
+    // ✅ لما تضغط زر الفيتش: استخدم watch url كـ url (زي Dart)
+    if (btnFetch) {
+      btnFetch.addEventListener("click", () => fetchFromDownr(YOUTUBE_WATCH_URL));
+    } else {
+      log("⚠️ زر fetchYoutubeData غير موجود");
+    }
+
     if (!goToPage2) log("⚠️ زر goToPage2 غير موجود");
   }
 
-  // ربط آمن (يشتغل في أغلب البيئات)
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", bindHandlers);
   } else {
     bindHandlers();
   }
 
-  // fallback إضافي لو بيئة WebView غريبة
   setTimeout(() => {
     try { bindHandlers(); } catch (_) {}
   }, 300);
