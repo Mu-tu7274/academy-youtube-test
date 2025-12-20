@@ -2,9 +2,8 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <title>تشغيل يوتيوب + Fetch عبر Flutter</title>
+  <title>تشغيل يوتيوب مع التوكن</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <style>
     :root {
       --bg-main: #050816;
@@ -30,16 +29,15 @@
     .shell {
       position: relative;
       width: 100%;
-      max-width: 560px;
+      max-width: 720px;
       border-radius: 20px;
       background: var(--bg-card);
       box-shadow: 0 20px 45px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.05);
       padding: 20px 18px 18px;
     }
 
-    .title { font-size: 18px; font-weight: 700; margin-bottom: 8px; text-align: center; }
+    .title { font-size: 18px; font-weight: 600; margin-bottom: 8px; text-align: center; }
     .subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; text-align: center; }
-
     .token-label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
     .token-box {
       width: 100%;
@@ -52,9 +50,8 @@
       line-height: 1.5;
       overflow-wrap: break-word;
     }
-
     .btn {
-      margin-top: 12px;
+      margin-top: 18px;
       width: 100%;
       border-radius: 999px;
       border: none;
@@ -67,15 +64,15 @@
       cursor: pointer;
       background: linear-gradient(135deg, var(--accent), var(--accent-strong));
       color: #050816;
-      font-weight: 700;
-      box-shadow: 0 10px 24px rgba(255, 107, 61, 0.35);
+      font-weight: 600;
+      box-shadow: 0 10px 24px rgba(255, 107, 61, 0.45);
     }
     .btn-secondary {
+      margin-top: 10px;
       background: transparent;
       color: var(--text-main);
       border: 1px solid var(--border-soft);
       box-shadow: none;
-      font-weight: 600;
     }
     .hidden { display: none; }
 
@@ -88,7 +85,7 @@
       border-radius: 12px;
       padding: 10px;
       background: rgba(0,0,0,0.18);
-      max-height: 160px;
+      max-height: 140px;
       overflow: auto;
       white-space: pre-wrap;
     }
@@ -109,50 +106,42 @@
     }
     .classic-btn:active { transform: scale(0.98); }
 
-    /* صفحة عرض النتيجة */
-    .result-box {
-      margin-top: 12px;
-      border-radius: 14px;
-      background: rgba(3, 7, 30, 0.65);
-      border: 1px solid var(--border-soft);
-      padding: 10px;
+    /* ✅ صفحة تشغيل فيديو مباشر */
+    .video-wrap{
+      width: 100%;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(0,0,0,0.25);
     }
-    .result-title {
+    video{
+      width: 100%;
+      height: auto;
+      display: block;
+      background: #000;
+    }
+    .hint{
       font-size: 12px;
       color: var(--text-muted);
-      margin-bottom: 8px;
-    }
-    pre.json-viewer {
-      margin: 0;
-      font-size: 12px;
+      margin-top: 10px;
       line-height: 1.5;
-      white-space: pre-wrap;
-      word-break: break-word;
-      max-height: 280px;
+    }
+    .url-mini{
+      margin-top: 10px;
+      font-size: 11px;
+      color: #cfcfe6;
+      opacity: .9;
+      border: 1px dashed rgba(255,255,255,0.18);
+      border-radius: 12px;
+      padding: 10px;
+      background: rgba(0,0,0,0.18);
+      max-height: 120px;
       overflow: auto;
-      direction: ltr;
-      text-align: left;
-      color: #eaeaff;
+      direction:ltr;
+      text-align:left;
+      word-break: break-all;
+      white-space: pre-wrap;
     }
-
-    .loader {
-      margin-top: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-    .spinner {
-      width: 18px;
-      height: 18px;
-      border: 3px solid rgba(255,255,255,0.18);
-      border-top-color: rgba(255,255,255,0.85);
-      border-radius: 50%;
-      animation: spin 0.9s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 
@@ -161,22 +150,23 @@
 
     <button id="classicModeBtn" class="classic-btn" type="button">الوضع الكلاسيكي</button>
 
-    <!-- PAGE 1 -->
+    <!-- الصفحة الأولى -->
     <div id="page1">
       <div class="title">تشغيل يوتيوب معنا</div>
-      <div class="subtitle">اضغط للانتقال لخطوة التشغيل / الفيتش.</div>
+      <div class="subtitle">اضغط على الزر بالأسفل للانتقال إلى خطوة تشغيل الفيديو.</div>
 
       <div class="token-label">authToken من localStorage</div>
       <div id="tokenBoxPage1" class="token-box">جارِ تحميل التوكن...</div>
 
-      <button id="goToPage2" class="btn">التالي ▶</button>
+      <button id="goToPage2" class="btn">اضغط هنا لتشغيل يوتيوب معنا ▶</button>
+
       <div id="log1" class="log"></div>
     </div>
 
-    <!-- PAGE 2 -->
+    <!-- الصفحة الثانية -->
     <div id="page2" class="hidden">
-      <div class="title">خطوة التشغيل</div>
-      <div class="subtitle">اختر تشغيل الفيديو أو جلب بياناته عبر Flutter</div>
+      <div class="title">خطوة تشغيل الفيديو</div>
+      <div class="subtitle">اختر طريقة تشغيل الفيديو</div>
 
       <div class="token-label">authToken من localStorage</div>
       <div id="tokenBoxPage2" class="token-box">جارِ تحميل التوكن...</div>
@@ -184,29 +174,33 @@
       <button id="openYoutube" class="btn">تشغيل يوتيوب (Watch) ▶</button>
       <button id="openYoutubeEmbedDirect" class="btn btn-secondary">تشغيل يوتيوب (Embedded مباشر) ▶</button>
 
-      <!-- ✅ الزر اللي بينقلك لصفحة الفيتش -->
-      <button id="goToFetchPage" class="btn btn-secondary">جلب بيانات الفيديو (Flutter) 📥</button>
+      <!-- ✅ زر جديد: يفتح صفحة تشغيل الفيديو المباشر -->
+      <button id="openDirectVideoPage" class="btn btn-secondary">تشغيل الرابط المباشر (MP4) ▶</button>
 
-      <button id="backToPage1" class="btn btn-secondary">رجوع</button>
+      <button id="backToPage1" class="btn btn-secondary">رجوع للصفحة السابقة</button>
+
       <div id="log2" class="log"></div>
     </div>
 
-    <!-- PAGE 3: Fetch via Flutter -->
+    <!-- ✅ الصفحة الثالثة: تشغيل رابط googlevideo -->
     <div id="page3" class="hidden">
-      <div class="title">جلب بيانات الفيديو</div>
-      <div class="subtitle">سيتم عمل الفيتش عبر Flutter لتجنب CORS</div>
+      <div class="title">تشغيل الرابط المباشر</div>
+      <div class="subtitle">سيتم تشغيل الرابط داخل مشغل HTML5</div>
 
-      <div class="loader" id="loader">
-        <span class="spinner"></span>
-        <span>جارِ جلب البيانات...</span>
+      <div class="video-wrap">
+        <video id="directVideo" controls playsinline preload="metadata"></video>
       </div>
 
-      <div id="fetchResultBox" class="result-box hidden">
-        <div class="result-title">نتيجة الفيتش</div>
-        <pre id="fetchResultPre" class="json-viewer"></pre>
+      <div class="hint">
+        لو الفيديو ما اشتغلش:
+        <br>1) الرابط غالبًا انتهى (expire).
+        <br>2) أو السيرفر رفض التشغيل داخل WebView/المتصفح.
       </div>
 
-      <button id="retryFetch" class="btn btn-secondary">إعادة المحاولة 🔁</button>
+      <div class="token-label" style="margin-top:12px;">الرابط الحالي</div>
+      <div id="directUrlBox" class="url-mini"></div>
+
+      <button id="reloadDirectVideo" class="btn btn-secondary">إعادة تحميل الفيديو 🔁</button>
       <button id="backToPage2" class="btn btn-secondary">رجوع</button>
 
       <div id="log3" class="log"></div>
@@ -221,34 +215,76 @@
   const YOUTUBE_WATCH_URL = "https://www.youtube.com/watch?v=m-VVub8Jp_w";
   const YOUTUBE_EMBED_URL = "https://www.youtube.com/embed/m-VVub8Jp_w?autoplay=1&playsinline=1";
 
+  // ✅ الرابط المباشر (googlevideo) اللي انت بعته
+  const DIRECT_VIDEO_URL =
+    "https://rr2---sn-uxaxjvhxbt2u-icxl.googlevideo.com/videoplayback?expire=1766275114&ei=yuNGaY6ENJCH0u8P7djZgAg&ip=156.217.133.251&id=o-AF3ZHXNdF3ZmxB7hlZ1xT3Z4hCGkcwh2iRMZDmvKcBvR&itag=134&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&cps=0&met=1766253514%2C&mh=k5&mm=31%2C29&mn=sn-uxaxjvhxbt2u-icxl%2Csn-hgn7rn7r&ms=au%2Crdu&mv=m&mvi=2&pl=19&rms=au%2Cau&initcwndbps=346250&bui=AYUSA3D2Y-_FrKyRS5gQieWRsicsbyiPfi1GY8JyvhHa72VyQvyr39L0xcXbQBGMymxK9Ey_z0og0eYl&spc=wH4QqydEeB297PdKSrowzR8KwbveyyrPV9ceKxnqgsp6lEZqDLgRglw0oE-d1uWK&vprv=1&svpuc=1&mime=video%2Fmp4&rqh=1&gir=yes&clen=16565614&dur=2187.796&lmt=1762469804271721&mt=1766252974&fvip=3&keepalive=yes&fexp=51552689%2C51565115%2C51565681%2C51580968&c=ANDROID&txp=6209224&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Crqh%2Cgir%2Cclen%2Cdur%2Clmt&sig=AJfQdSswRgIhAITKPi988bku5P56oiWnWJM8_oPNs7n0kZnRa5zP8IGfAiEA50qwVQkUqwdzRM1vxgL__kgjTiVmo9xi_rrNEYfjw1E%3D&lsparams=cps%2Cmet%2Cmh%2Cmm%2Cmn%2Cms%2Cmv%2Cmvi%2Cpl%2Crms%2Cinitcwndbps&lsig=APaTxxMwRgIhAMc8FoOIfSh-Nic0gxtfr54vzqjMFPAmXklnDXTLa3Q7AiEAp5mfDaMXvAIv-CXg7H6SDTAekE76_kXiyIX152ZKubE%3D";
+
+  const LESSON_CONTEXT = {
+    isInteractiveQuiz: true,
+    timelineMarkers: [
+      { name: "مقدمة", time: "00:00:10" },
+      { name: "الجزء الأول", time: "00:02:30" },
+      { name: "خلاصة", time: "00:08:15" }
+    ],
+    lessonQuizzes: [
+      { quizId: "QZ_001", appearAtSeconds: 335,  webUrl: "https://example.com/quiz/1", isCompleted: false },
+      { quizId: "QZ_002", appearAtSeconds: 440, webUrl: "https://example.com/quiz/2", isCompleted: false }
+    ]
+  };
+
   function el(id){ return document.getElementById(id); }
 
-  function activeLogEl() {
-    if (!el("page3").classList.contains("hidden")) return el("log3");
-    if (!el("page2").classList.contains("hidden")) return el("log2");
-    return el("log1");
+  function currentLog() {
+    if (el("page3") && !el("page3").classList.contains("hidden")) return el("log3");
+    return el("page2").classList.contains("hidden") ? el("log1") : el("log2");
   }
 
   function log(msg) {
-    const box = activeLogEl();
+    const activeLog = currentLog();
     const line = `[${new Date().toLocaleTimeString()}] ${msg}\n`;
-    if (box) box.textContent = (box.textContent + line).slice(-4000);
+    if (activeLog) activeLog.textContent = (activeLog.textContent + line).slice(-4000);
   }
 
-  function setTokenBoxes() {
-    const token = localStorage.getItem("authToken") || "(لا يوجد authToken)";
-    if (el("tokenBoxPage1")) el("tokenBoxPage1").textContent = token;
-    if (el("tokenBoxPage2")) el("tokenBoxPage2").textContent = token;
+  function parseTimeToSeconds(timeStr) {
+    const parts = String(timeStr || "00:00:00").split(":").map(Number);
+    if (parts.length !== 3 || parts.some(isNaN)) return 0;
+    return parts[0] * 3600 + parts[1] * 60 + parts[2];
   }
 
-  function showPage(n) {
-    ["page1","page2","page3"].forEach(id => el(id).classList.add("hidden"));
-    el("page" + n).classList.remove("hidden");
-    setTokenBoxes();
-    log("➡️ فتح الصفحة " + n);
+  function writeLessonContextToLocalStorage(ctx) {
+    const timeline = (ctx.timelineMarkers || []).map(m => ({
+      name: m.name || "",
+      time: m.time || "00:00:00",
+      timeInSeconds: parseTimeToSeconds(m.time)
+    }));
+
+    const quizzes = (ctx.lessonQuizzes || []).map(q => ({
+      quizId: String(q.quizId || ""),
+      appearAtSeconds: Number(q.appearAtSeconds || 0),
+      webUrl: String(q.webUrl || ""),
+      isCompleted: !!q.isCompleted
+    }));
+
+    localStorage.setItem("isInteractiveQuiz", JSON.stringify(!!ctx.isInteractiveQuiz));
+    localStorage.setItem("timelineMarkers", JSON.stringify(timeline));
+    localStorage.setItem("lessonQuizzes", JSON.stringify(quizzes));
+
+    return { ok: true, timeline, quizzes };
   }
 
-  /* classic mode -> Flutter */
+  function notifyFlutterContextReady(payload) {
+    try {
+      if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
+        window.flutter_inappwebview.callHandler("lessonContextReady", payload);
+        log("✅ تم إرسال lessonContextReady لـ Flutter");
+      } else {
+        log("ℹ️ flutter_inappwebview غير موجود (تجربة متصفح عادي)");
+      }
+    } catch (e) {
+      log("⚠️ خطأ أثناء callHandler: " + (e && e.message ? e.message : e));
+    }
+  }
+
   function notifyFlutterClassicMode(payload) {
     try {
       if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
@@ -258,51 +294,99 @@
         log("ℹ️ flutter_inappwebview غير موجود (تجربة متصفح عادي)");
       }
     } catch (e) {
-      log("⚠️ classicMode error: " + (e && e.message ? e.message : e));
+      log("⚠️ خطأ أثناء classicMode callHandler: " + (e && e.message ? e.message : e));
     }
   }
 
-  /* ✅ Fetch عبر Flutter handler: fetchDownr */
-  async function fetchDownrViaFlutter(url) {
-    const loader = el("loader");
-    const box = el("fetchResultBox");
-    const pre = el("fetchResultPre");
+  function setTokenBoxes() {
+    const token = localStorage.getItem("authToken") || "(لا يوجد authToken)";
+    if (el("tokenBoxPage1")) el("tokenBoxPage1").textContent = token;
+    if (el("tokenBoxPage2")) el("tokenBoxPage2").textContent = token;
+  }
 
-    if (loader) loader.classList.remove("hidden");
-    if (box) box.classList.add("hidden");
-    if (pre) pre.textContent = "";
+  function showPage(pageNo) {
+    const p1 = el("page1");
+    const p2 = el("page2");
+    const p3 = el("page3");
+    if (!p1 || !p2 || !p3) return;
 
-    try {
-      if (!(window.flutter_inappwebview && window.flutter_inappwebview.callHandler)) {
-        log("❌ لا يوجد flutter_inappwebview.callHandler — هذه الصفحة تحتاج WebView داخل Flutter");
-        if (loader) loader.classList.add("hidden");
-        if (box) box.classList.remove("hidden");
-        if (pre) pre.textContent = JSON.stringify({
-          ok: false,
-          error: "flutter_inappwebview.callHandler not available"
-        }, null, 2);
-        return;
-      }
-
-      log("📡 طلب fetchDownr من Flutter...");
-      const result = await window.flutter_inappwebview.callHandler("fetchDownr", { url });
-
-      log("✅ Flutter رجّع نتيجة");
-      if (loader) loader.classList.add("hidden");
-      if (box) box.classList.remove("hidden");
-
-      // اعرض النتيجة
-      if (pre) pre.textContent = JSON.stringify(result, null, 2);
-
-    } catch (e) {
-      log("❌ خطأ أثناء callHandler(fetchDownr): " + (e && e.message ? e.message : e));
-      if (loader) loader.classList.add("hidden");
-      if (box) box.classList.remove("hidden");
-      if (pre) pre.textContent = JSON.stringify({
-        ok: false,
-        error: (e && e.message) ? e.message : String(e)
-      }, null, 2);
+    if (pageNo === 1) {
+      p1.classList.remove("hidden");
+      p2.classList.add("hidden");
+      p3.classList.add("hidden");
+      log("⬅️ رجوع للصفحة 1");
+    } else if (pageNo === 2) {
+      p1.classList.add("hidden");
+      p2.classList.remove("hidden");
+      p3.classList.add("hidden");
+      log("➡️ فتح الصفحة 2");
+    } else {
+      p1.classList.add("hidden");
+      p2.classList.add("hidden");
+      p3.classList.remove("hidden");
+      log("➡️ فتح الصفحة 3 (تشغيل مباشر)");
     }
+
+    setTokenBoxes();
+  }
+
+  function prepareAndGo(url) {
+    try {
+      const result = writeLessonContextToLocalStorage(LESSON_CONTEXT);
+
+      const payload = {
+        ok: result.ok,
+        isInteractiveQuiz: LESSON_CONTEXT.isInteractiveQuiz,
+        timelineMarkers: result.timeline || [],
+        lessonQuizzes: result.quizzes || [],
+        ts: Date.now()
+      };
+
+      log("✅ تم حفظ الداتا في localStorage");
+      log("timelineMarkers=" + localStorage.getItem("timelineMarkers"));
+      log("lessonQuizzes=" + localStorage.getItem("lessonQuizzes"));
+
+      notifyFlutterContextReady(payload);
+
+      setTimeout(() => {
+        log("🚀 انتقال إلى: " + url);
+        window.location.assign(url);
+      }, 80);
+    } catch (e) {
+      log("❌ خطأ داخل prepareAndGo: " + (e && e.message ? e.message : e));
+    }
+  }
+
+  function playDirectUrl() {
+    const v = el("directVideo");
+    const box = el("directUrlBox");
+    if (box) box.textContent = DIRECT_VIDEO_URL;
+
+    if (!v) {
+      log("⚠️ video element غير موجود");
+      return;
+    }
+
+    // reset
+    try {
+      v.pause();
+      v.removeAttribute("src");
+      v.load();
+    } catch (_) {}
+
+    v.src = DIRECT_VIDEO_URL;
+
+    v.addEventListener("error", () => {
+      const err = v.error;
+      log("❌ video error: " + (err ? `code=${err.code}` : "unknown"));
+    }, { once: true });
+
+    // حاول تشغيل تلقائي (قد يفشل بسبب سياسات autoplay)
+    v.play().then(() => {
+      log("✅ تشغيل الفيديو المباشر بدأ");
+    }).catch((e) => {
+      log("ℹ️ لم يبدأ autoplay (طبيعي). اضغط Play داخل المشغل. السبب: " + (e?.message || e));
+    });
   }
 
   function bindHandlers() {
@@ -315,8 +399,9 @@
     const backToPage2 = el("backToPage2");
     const btnWatch = el("openYoutube");
     const btnEmbed = el("openYoutubeEmbedDirect");
-    const goFetchPage = el("goToFetchPage");
-    const retryFetch = el("retryFetch");
+
+    const btnOpenDirect = el("openDirectVideoPage");
+    const btnReloadDirect = el("reloadDirectVideo");
 
     if (classicBtn) {
       classicBtn.addEventListener("click", () => {
@@ -332,29 +417,26 @@
 
     if (goToPage2) goToPage2.addEventListener("click", () => showPage(2));
     if (backToPage1) backToPage1.addEventListener("click", () => showPage(1));
+
+    if (btnWatch) btnWatch.addEventListener("click", () => prepareAndGo(YOUTUBE_WATCH_URL));
+    if (btnEmbed) btnEmbed.addEventListener("click", () => prepareAndGo(YOUTUBE_EMBED_URL));
+
+    // ✅ زر يفتح الصفحة 3 ويبدأ التشغيل
+    if (btnOpenDirect) {
+      btnOpenDirect.addEventListener("click", () => {
+        showPage(3);
+        // شغل الفيديو بعد عرض الصفحة
+        setTimeout(playDirectUrl, 50);
+      });
+    }
+
+    // ✅ زر رجوع من الصفحة 3
     if (backToPage2) backToPage2.addEventListener("click", () => showPage(2));
 
-    if (btnWatch) btnWatch.addEventListener("click", () => {
-      log("🚀 انتقال إلى Watch: " + YOUTUBE_WATCH_URL);
-      window.location.assign(YOUTUBE_WATCH_URL);
-    });
+    // ✅ إعادة تحميل الفيديو
+    if (btnReloadDirect) btnReloadDirect.addEventListener("click", () => playDirectUrl());
 
-    if (btnEmbed) btnEmbed.addEventListener("click", () => {
-      log("🚀 انتقال إلى Embed: " + YOUTUBE_EMBED_URL);
-      window.location.assign(YOUTUBE_EMBED_URL);
-    });
-
-    // ✅ زر يفتح صفحة 3 ويبدأ الفيتش تلقائي
-    if (goFetchPage) goFetchPage.addEventListener("click", () => {
-      showPage(3);
-      fetchDownrViaFlutter(YOUTUBE_WATCH_URL);
-    });
-
-    // ✅ Retry
-    if (retryFetch) retryFetch.addEventListener("click", () => {
-      showPage(3);
-      fetchDownrViaFlutter(YOUTUBE_WATCH_URL);
-    });
+    if (!goToPage2) log("⚠️ زر goToPage2 غير موجود");
   }
 
   if (document.readyState === "loading") {
@@ -363,8 +445,9 @@
     bindHandlers();
   }
 
-  // fallback
-  setTimeout(() => { try { bindHandlers(); } catch(_) {} }, 250);
+  setTimeout(() => {
+    try { bindHandlers(); } catch (_) {}
+  }, 300);
 
 })();
 </script>
