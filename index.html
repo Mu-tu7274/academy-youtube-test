@@ -1,121 +1,334 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>كل روابط URL</title>
-<style>
-  body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;margin:0;padding:12px;background:#050816;color:#f5f5f5}
-  .card{max-width:980px;margin:auto;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px}
-  h1{margin:0 0 10px;font-size:16px}
-
-  /* ✅ كل صف يبقى سطر واحد، واللينك هو اللي يعمل سكرول أفقي */
-  .item{
-    display:flex;
-    gap:8px;
-    align-items:center;
-    border:1px solid rgba(255,255,255,.10);
-    border-radius:12px;
-    padding:8px;
-    margin:8px 0;
-    background:rgba(0,0,0,.18);
-    flex-wrap:nowrap;     /* مهم */
-    overflow:hidden;      /* مهم */
-  }
-
-  /* ✅ اللينك يبقى داخل “شريط” صغير قابل للسكرول */
-  a{
-    color:#ffb347;
-    text-decoration:none;
-    direction:ltr;
-    text-align:left;
-
-    flex:1;
-    min-width:0;          /* مهم مع flex */
-    white-space:nowrap;   /* سطر واحد */
-    overflow-x:auto;      /* سكرول أفقي داخل اللينك */
-    overflow-y:hidden;
-    text-overflow:ellipsis;
-    -webkit-overflow-scrolling:touch; /* سكرول ناعم على iOS */
-    padding:6px 8px;
-    border-radius:10px;
-    background:rgba(255,255,255,.06);
-  }
-
-  /* يخفي شكل السكرول بار لو تحب */
-  a::-webkit-scrollbar{height:0}
-
-  button{
-    border-radius:999px;
-    border:1px solid rgba(255,255,255,.14);
-    background:transparent;
-    color:#f5f5f5;
-    padding:7px 10px;
-    cursor:pointer;
-    flex:0 0 auto;
-  }
-
-  .muted{color:#a8a8c0;font-size:12px;margin-top:8px}
-</style>
-</head>
-<body>
-  <div class="card">
-    <h1>روابط التحميل (URLs فقط)</h1>
-    <div id="list"></div>
-    <div class="muted" id="count"></div>
-  </div>
-
-  <script>
-    // ✅ ضع روابط الـ url هنا فقط (لينك لكل سطر)
-  const URLS = [
-  "https://rr2---sn-uxaxjvhxbt2u-icxl.googlevideo.com/videoplayback?expire=1766275116&ei=zONGae2HDcPfvdIPkY7w8AQ&ip=156.217.133.251&id=o-AA0PpcTzuHo2c_xY-EvW1whxRjYtd52XhDP7rQX51tfQ&itag=134&aitags=134%2C160%2C243&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&cps=0&met=1766253516%2C&mh=k5&mm=31%2C29&mn=sn-uxaxjvhxbt2u-icxl%2Csn-hgn7yn76&ms=au%2Crdu&mv=m&mvi=2&pl=19&rms=au%2Cau&pcm2=no&initcwndbps=351250&bui=AYUSA3B3PMYz0ej7mZsKcCgKX27t8UrMDdwmuJKhFpyvwpgX9AOoVnKQufnVq2mI0e08XKzXjjK1q2W-&spc=wH4Qq9zqcg4Sqp54RKU8wa5zg9MRmynBKzaQhQrLgfCgo5rakqi0ei9NWuB4AnvHhMJzvQ&vprv=1&svpuc=1&mime=video%2Fmp4&ns=U40rrEEWV4WuAHvj9UPzUP4R&rqh=1&gir=yes&clen=16565614&dur=2187.796&lmt=1762469804271721&mt=1766253218&fvip=5&keepalive=yes&lmw=1&fexp=51557447%2C51565115%2C51565681%2C51580970&c=TVHTML5&sefc=1&txp=6209224&n=trSGUv1FvnnTj23Bbg&sparams=expire%2Cei%2Cip%2Cid%2Caitags%2Csource%2Crequiressl%2Cxpc%2Cpcm2%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Cns%2Crqh%2Cgir%2Cclen%2Cdur%2Clmt&sig=AJfQdSswRQIgX4bPmAyO6f6KJkOryhtV46AMrdVwwxPnk8xA5NnDCq0CIQCA_yHv2dnhBv-Iukdo9h2LStSU-0VGf15jiyOyMxyZ2g%3D%3D&lsparams=cps%2Cmet%2Cmh%2Cmm%2Cmn%2Cms%2Cmv%2Cmvi%2Cpl%2Crms%2Cinitcwndbps&lsig=APaTxxMwRgIhAN2C1F-oScQPjEDyu6bf5cyCgEzytxtI1Z5iK2ljmZdDAiEA4G_c9dVWoCKcUWUWuV2it-BFEkIJJ_sFjw9fR1fvoCE%3D",
-  "https://rr2---sn-uxaxjvhxbt2u-icxl.googlevideo.com/videoplayback?expire=1766275114&ei=yuNGaYzMM9mKvdIPodjwkQ8&ip=156.217.133.251&id=o-AP1HN50POuXgipQtb4Vx8HTFuMVdWrjn8R00vf3MdlLC&itag=134&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&cps=0&met=1766253514%2C&mh=k5&mm=31%2C29&mn=sn-uxaxjvhxbt2u-icxl%2Csn-hgn7yn76&ms=au%2Crdu&mv=m&mvi=2&pl=19&rms=au%2Cau&initcwndbps=351250&bui=AYUSA3BRV6RIFyaTaZ-gtREH1OGOzwJXP8DVOrJuLStpIDrJMrjft3FzIrFbDcjSX83JaTnW0Dpo8SuB&spc=wH4Qq8EGnpSMdGBR6viJ6NR2QrF4rC0OvC_o9IBXgaDN3TKytOBiFA&vprv=1&svpuc=1&mime=video%2Fmp4&rqh=1&gir=yes&clen=16565614&dur=2187.796&lmt=1762469804271721&mt=1766253218&fvip=5&keepalive=yes&fexp=51552689%2C51565116%2C51565681%2C51580968&c=IOS&txp=6209224&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Crqh%2Cgir%2Cclen%2Cdur%2Clmt&sig=AJfQdSswRQIhAP4YU8QULxDuTKNClFdupI5ixEso99picfd9mtmj-3UkAiA4YjrVvUWv0O7Dt_a7RXWuQbuT51hELsR_b-S7-lZ_eQ%3D%3D&lsparams=cps%2Cmet%2Cmh%2Cmm%2Cmn%2Cms%2Cmv%2Cmvi%2Cpl%2Crms%2Cinitcwndbps&lsig=APaTxxMwRAIgRggyJpOM6j2WTsS2MDkTuycTxoJhKo7DsYXHxpZlTdsCIFEN_b4oD3DNXRFSO6A58E3_xQGblr2Mv1AwueE1TYvJ",
-  "https://rr2---sn-uxaxjvhxbt2u-icxl.googlevideo.com/videoplayback?expire=1766275114&ei=yuNGaY6ENJCH0u8P7djZgAg&ip=156.217.133.251&id=o-AF3ZHXNdF3ZmxB7hlZ1xT3Z4hCGkcwh2iRMZDmvKcBvR&itag=134&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&cps=0&met=1766253514%2C&mh=k5&mm=31%2C29&mn=sn-uxaxjvhxbt2u-icxl%2Csn-hgn7rn7r&ms=au%2Crdu&mv=m&mvi=2&pl=19&rms=au%2Cau&initcwndbps=346250&bui=AYUSA3D2Y-_FrKyRS5gQieWRsicsbyiPfi1GY8JyvhHa72VyQvyr39L0xcXbQBGMymxK9Ey_z0og0eYl&spc=wH4QqydEeB297PdKSrowzR8KwbveyyrPV9ceKxnqgsp6lEZqDLgRglw0oE-d1uWK&vprv=1&svpuc=1&mime=video%2Fmp4&rqh=1&gir=yes&clen=16565614&dur=2187.796&lmt=1762469804271721&mt=1766252974&fvip=3&keepalive=yes&fexp=51552689%2C51565115%2C51565681%2C51580968&c=ANDROID&txp=6209224&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Crqh%2Cgir%2Cclen%2Cdur%2Clmt&sig=AJfQdSswRgIhAITKPi988bku5P56oiWnWJM8_oPNs7n0kZnRa5zP8IGfAiEA50qwVQkUqwdzRM1vxgL__kgjTiVmo9xi_rrNEYfjw1E%3D&lsparams=cps%2Cmet%2Cmh%2Cmm%2Cmn%2Cms%2Cmv%2Cmvi%2Cpl%2Crms%2Cinitcwndbps&lsig=APaTxxMwRgIhAMc8FoOIfSh-Nic0gxtfr54vzqjMFPAmXklnDXTLa3Q7AiEAp5mfDaMXvAIv-CXg7H6SDTAekE76_kXiyIX152ZKubE%3D",
-  "https://rr2---sn-uxaxjvhxbt2u-icxl.googlevideo.com/videoplayback?expire=1766275116&ei=zONGae2HDcPfvdIPkY7w8AQ&ip=156.217.133.251&id=o-AA0PpcTzuHo2c_xY-EvW1whxRjYtd52XhDP7rQX51tfQ&itag=243&aitags=134%2C160%2C243&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&cps=0&met=1766253516%2C&mh=k5&mm=31%2C29&mn=sn-uxaxjvhxbt2u-icxl%2Csn-hgn7yn76&ms=au%2Crdu&mv=m&mvi=2&pl=19&rms=au%2Cau&pcm2=no&initcwndbps=351250&bui=AYUSA3B3PMYz0ej7mZsKcCgKX27t8UrMDdwmuJKhFpyvwpgX9AOoVnKQufnVq2mI0e08XKzXjjK1q2W-&spc=wH4Qq9zqcg4Sqp54RKU8wa5zg9MRmynBKzaQhQrLgfCgo5rakqi0ei9NWuB4AnvHhMJzvQ&vprv=1&svpuc=1&mime=video%2Fwebm&ns=U40rrEEWV4WuAHvj9UPzUP4R&rqh=1&gir=yes&clen=14881555&dur=2187.796&lmt=1762468944943729&mt=1766253218&fvip=5&keepalive=yes&lmw=1&fexp=51557447%2C51565115%2C51565681%2C51580970&c=TVHTML5&sefc=1&txp=6209224&n=trSGUv1FvnnTj23Bbg&sparams=expire%2Cei%2Cip%2Cid%2Caitags%2Csource%2Crequiressl%2Cxpc%2Cpcm2%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Cns%2Crqh%2Cgir%2Cclen%2Cdur%2Clmt&sig=AJfQdSswRgIhAMk4B33XcsqIgnawl9Wbciu3Boc4xnTK50k9IyNbHxv5AiEAk2qVe9wbaY_dooBW0Ry74pKWBRj9U2gFnck5awKA_qA%3D&lsparams=cps%2Cmet%2Cmh%2Cmm%2Cmn%2Cms%2Cmv%2Cmvi%2Cpl%2Crms%2Cinitcwndbps&lsig=APaTxxMwRgIhAN2C1F-oScQPjEDyu6bf5cyCgEzytxtI1Z5iK2ljmZdDAiEA4G_c9dVWoCKcUWUWuV2it-BFEkIJJ_sFjw9fR1fvoCE%3D",
-  "https://rr2---sn-uxaxjvhxbt2u-icxl.googlevideo.com/videoplayback?expire=1766275116&ei=zONGae2HDcPfvdIPkY7w8AQ&ip=156.217.133.251&id=o-AA0PpcTzuHo2c_xY-EvW1whxRjYtd52XhDP7rQX51tfQ&itag=18&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&cps=0&met=1766253516%2C&mh=k5&mm=31%2C29&mn=sn-uxaxjvhxbt2u-icxl%2Csn-hgn7yn76&ms=au%2Crdu&mv=m&mvi=2&pl=19&rms=au%2Cau&pcm2=no&initcwndbps=351250&bui=AYUSA3DIJRzohqlAmfC5VGFkkj3VV-Wl7Pi0ZWt0BxY7XwOzcXhcKiZ3nKB9ldhDi7odNliwjRxwf8fL&spc=wH4Qq9zpcg4Sqp54RKU8wa5zg9MRmynBKzaQhQrLgfCgo5rakqi0ei9NWuB4Mn7XhDpzD7LY&vprv=1&svpuc=1&mime=video%2Fmp4&ns=LTdAaCKPpeX9AtGVZn9mkB4R&rqh=1&gir=yes&clen=29164622&ratebypass=yes&dur=2187.923&lmt=1762468964820838&mt=1766253218&fvip=5&lmw=1&fexp=51557447%2C51565115%2C51565681%2C51580970&c=TVHTML5&sefc=1&txp=6209224&n=pmVM99QTfoXCLUkQtL&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cpcm2%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Cns%2Crqh%2Cgir%2Cclen%2Cratebypass%2Cdur%2Clmt&sig=AJfQdSswRAIgM8zR2tWtd3Hd2waS1R4FradMyZ7HxJtPw8sn0OXP8MoCICPmGdN_brDzsyctpi8W_8aB4AJ8WaA-5Bte5Fu6XnEj&lsparams=cps%2Cmet%2Cmh%2Cmm%2Cmn%2Cms%2Cmv%2Cmvi%2Cpl%2Crms%2Cinitcwndbps&lsig=APaTxxMwRgIhAN2C1F-oScQPjEDyu6bf5cyCgEzytxtI1Z5iK2ljmZdDAiEA4G_c9dVWoCKcUWUWuV2it-BFEkIJJ_sFjw9fR1fvoCE%3D",
-  "https://rr2---sn-uxaxjvhxbt2u-icxl.googlevideo.com/videoplayback?expire=1766275116&ei=zONGae2HDcPfvdIPkY7w8AQ&ip=156.217.133.251&id=o-AA0PpcTzuHo2c_xY-EvW1whxRjYtd52XhDP7rQX51tfQ&itag=160&aitags=134%2C160%2C243&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&cps=0&met=1766253516%2C&mh=k5&mm=31%2C29&mn=sn-uxaxjvhxbt2u-icxl%2Csn-hgn7yn76&ms=au%2Crdu&mv=m&mvi=2&pl=19&rms=au%2Cau&pcm2=no&initcwndbps=351250&bui=AYUSA3B3PMYz0ej7mZsKcCgKX27t8UrMDdwmuJKhFpyvwpgX9AOoVnKQufnVq2mI0e08XKzXjjK1q2W-&spc=wH4Qq9zqcg4Sqp54RKU8wa5zg9MRmynBKzaQhQrLgfCgo5rakqi0ei9NWuB4AnvHhMJzvQ&vprv=1&svpuc=1&mime=video%2Fmp4&ns=U40rrEEWV4WuAHvj9UPzUP4R&rqh=1&gir=yes&clen=5000757&dur=2187.796&lmt=1762469796568441&mt=1766253218&fvip=5&keepalive=yes&lmw=1&fexp=51557447%2C51565115%2C51565681%2C51580970&c=TVHTML5&sefc=1&txp=6209224&n=trSGUv1FvnnTj23Bbg&sparams=expire%2Cei%2Cip%2Cid%2Caitags%2Csource%2Crequiressl%2Cxpc%2Cpcm2%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Cns%2Crqh%2Cgir%2Cclen%2Cdur%2Clmt&sig=AJfQdSswRQIhAODCZ9oHBVQPpsKMgGTOiYkPV9VtFH7PDedRvCzFkb0UAiAXj23zgMECwCqXUizvedcn06yAr44uj7Bnd1uIuTu9Hw%3D%3D&lsparams=cps%2Cmet%2Cmh%2Cmm%2Cmn%2Cms%2Cmv%2Cmvi%2Cpl%2Crms%2Cinitcwndbps&lsig=APaTxxMwRgIhAN2C1F-oScQPjEDyu6bf5cyCgEzytxtI1Z5iK2ljmZdDAiEA4G_c9dVWoCKcUWUWuV2it-BFEkIJJ_sFjw9fR1fvoCE%3D",
-  "https://rr2---sn-uxaxjvhxbt2u-icxl.googlevideo.com/videoplayback?expire=1766275114&ei=yuNGaYzMM9mKvdIPodjwkQ8&ip=156.217.133.251&id=o-AP1HN50POuXgipQtb4Vx8HTFuMVdWrjn8R00vf3MdlLC&itag=160&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&cps=0&met=1766253514%2C&mh=k5&mm=31%2C29&mn=sn-uxaxjvhxbt2u-icxl%2Csn-hgn7yn76&ms=au%2Crdu&mv=m&mvi=2&pl=19&rms=au%2Cau&initcwndbps=351250&bui=AYUSA3BRV6RIFyaTaZ-gtREH1OGOzwJXP8DVOrJuLStpIDrJMrjft3FzIrFbDcjSX83JaTnW0Dpo8SuB&spc=wH4Qq8EGnpSMdGBR6viJ6NR2QrF4rC0OvC_o9IBXgaDN3TKytOBiFA&vprv=1&svpuc=1&mime=video%2Fmp4&rqh=1&gir=yes&clen=5000757&dur=2187.796&lmt=1762469796568441&mt=1766253218&fvip=5&keepalive=yes&fexp=51552689%2C51565116%2C51565681%2C51580968&c=IOS&txp=6209224&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Crqh%2Cgir%2Cclen%2Cdur%2Clmt&sig=AJfQdSswRQIhAJkCsUMxSP_Qp-4uu4KfXWSnPhmzsyMm7AHffjeppEh_AiAHZG8e4jriQddVREMQHZOM2goFVXH0XP8ARp4dnWDpPg%3D%3D&lsparams=cps%2Cmet%2Cmh%2Cmm%2Cmn%2Cms%2Cmv%2Cmvi%2Cpl%2Crms%2Cinitcwndbps&lsig=APaTxxMwRAIgRggyJpOM6j2WTsS2MDkTuycTxoJhKo7DsYXHxpZlTdsCIFEN_b4oD3DNXRFSO6A58E3_xQGblr2Mv1AwueE1TYvJ",
-  "https://rr2---sn-uxaxjvhxbt2u-icxl.googlevideo.com/videoplayback?expire=1766275114&ei=yuNGaY6ENJCH0u8P7djZgAg&ip=156.217.133.251&id=o-AF3ZHXNdF3ZmxB7hlZ1xT3Z4hCGkcwh2iRMZDmvKcBvR&itag=160&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&cps=0&met=1766253514%2C&mh=k5&mm=31%2C29&mn=sn-uxaxjvhxbt2u-icxl%2Csn-hgn7rn7r&ms=au%2Crdu&mv=m&mvi=2&pl=19&rms=au%2Cau&initcwndbps=346250&bui=AYUSA3D2Y-_FrKyRS5gQieWRsicsbyiPfi1GY8JyvhHa72VyQvyr39L0xcXbQBGMymxK9Ey_z0og0eYl&spc=wH4QqydEeB297PdKSrowzR8KwbveyyrPV9ceKxnqgsp6lEZqDLgRglw0oE-d1uWK&vprv=1&svpuc=1&mime=video%2Fmp4&rqh=1&gir=yes&clen=5000757&dur=2187.796&lmt=1762469796568441&mt=1766252974&fvip=3&keepalive=yes&fexp=51552689%2C51565115%2C51565681%2C51580968&c=ANDROID&txp=6209224&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Crqh%2Cgir%2Cclen%2Cdur%2Clmt&sig=AJfQdSswRQIhAPHIJNmbVJe6poFEmtSXtAwUmZGk4M2WPdsbZCx3_aR6AiAJhIN5Z0y0BJYNwZUBkB5Bjbtx9eULwrLo50buXo8clQ%3D%3D&lsparams=cps%2Cmet%2Cmh%2Cmm%2Cmn%2Cms%2Cmv%2Cmvi%2Cpl%2Crms%2Cinitcwndbps&lsig=APaTxxMwRgIhAMc8FoOIfSh-Nic0gxtfr54vzqjMFPAmXklnDXTLa3Q7AiEAp5mfDaMXvAIv-CXg7H6SDTAekE76_kXiyIX152ZKubE%3D",
-  "https://rr2---sn-uxaxjvhxbt2u-icxl.googlevideo.com/videoplayback?expire=1766275116&ei=zONGae2HDcPfvdIPkY7w8AQ&ip=156.217.133.251&id=o-AA0PpcTzuHo2c_xY-EvW1whxRjYtd52XhDP7rQX51tfQ&itag=251&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&cps=0&met=1766253516%2C&mh=k5&mm=31%2C29&mn=sn-uxaxjvhxbt2u-icxl%2Csn-hgn7yn76&ms=au%2Crdu&mv=m&mvi=2&pl=19&rms=au%2Cau&pcm2=no&initcwndbps=351250&bui=AYUSA3B3PMYz0ej7mZsKcCgKX27t8UrMDdwmuJKhFpyvwpgX9AOoVnKQufnVq2mI0e08XKzXjjK1q2W-&spc=wH4Qq9zqcg4Sqp54RKU8wa5zg9MRmynBKzaQhQrLgfCgo5rakqi0ei9NWuB4AnvHhMJzvQ&vprv=1&svpuc=1&mime=audio%2Fwebm&ns=U40rrEEWV4WuAHvj9UPzUP4R&rqh=1&gir=yes&clen=39850620&dur=2187.801&lmt=1762468995950294&mt=1766253218&fvip=5&keepalive=yes&lmw=1&fexp=51557447%2C51565115%2C51565681%2C51580970&c=TVHTML5&sefc=1&txp=6208224&n=trSGUv1FvnnTj23Bbg&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cpcm2%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Cns%2Crqh%2Cgir%2Cclen%2Cdur%2Clmt&sig=AJfQdSswRQIgKmYfpQ_3ih_WedXdEtckxK4sg_bRbWAWaJNivXSgH28CIQCkTVo7XkY5wiVOy_XUBgiCJUz1ajrjeHEZoc2DxisvXg%3D%3D&lsparams=cps%2Cmet%2Cmh%2Cmm%2Cmn%2Cms%2Cmv%2Cmvi%2Cpl%2Crms%2Cinitcwndbps&lsig=APaTxxMwRgIhAN2C1F-oScQPjEDyu6bf5cyCgEzytxtI1Z5iK2ljmZdDAiEA4G_c9dVWoCKcUWUWuV2it-BFEkIJJ_sFjw9fR1fvoCE%3D",
-  "https://rr2---sn-uxaxjvhxbt2u-icxl.googlevideo.com/videoplayback?expire=1766275114&ei=yuNGaYzMM9mKvdIPodjwkQ8&ip=156.217.133.251&id=o-AP1HN50POuXgipQtb4Vx8HTFuMVdWrjn8R00vf3MdlLC&itag=251&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&cps=0&met=1766253514%2C&mh=k5&mm=31%2C29&mn=sn-uxaxjvhxbt2u-icxl%2Csn-hgn7yn76&ms=au%2Crdu&mv=m&mvi=2&pl=19&rms=au%2Cau&initcwndbps=351250&bui=AYUSA3BRV6RIFyaTaZ-gtREH1OGOzwJXP8DVOrJuLStpIDrJMrjft3FzIrFbDcjSX83JaTnW0Dpo8SuB&spc=wH4Qq8EGnpSMdGBR6viJ6NR2QrF4rC0OvC_o9IBXgaDN3TKytOBiFA&vprv=1&svpuc=1&mime=audio%2Fwebm&rqh=1&gir=yes&clen=39850620&dur=2187.801&lmt=1762468995950294&mt=1766253218&fvip=5&keepalive=yes&fexp=51552689%2C51565116%2C51565681%2C51580968&c=IOS&txp=6208224&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Crqh%2Cgir%2Cclen%2Cdur%2Clmt&sig=AJfQdSswRQIgPCv6otfvx3cIfsmPHXDeXd50W8PtrjP3KRvi8jIQUdgCIQCa5eWp_JiyQPWIrPoI061S3Hnn-4nKK3DpYCB7GEiFrg%3D%3D&lsparams=cps%2Cmet%2Cmh%2Cmm%2Cmn%2Cms%2Cmv%2Cmvi%2Cpl%2Crms%2Cinitcwndbps&lsig=APaTxxMwRAIgRggyJpOM6j2WTsS2MDkTuycTxoJhKo7DsYXHxpZlTdsCIFEN_b4oD3DNXRFSO6A58E3_xQGblr2Mv1AwueE1TYvJ",
-  "https://rr2---sn-uxaxjvhxbt2u-icxl.googlevideo.com/videoplayback?expire=1766275114&ei=yuNGaY6ENJCH0u8P7djZgAg&ip=156.217.133.251&id=o-AF3ZHXNdF3ZmxB7hlZ1xT3Z4hCGkcwh2iRMZDmvKcBvR&itag=251&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&cps=0&met=1766253514%2C&mh=k5&mm=31%2C29&mn=sn-uxaxjvhxbt2u-icxl%2Csn-hgn7rn7r&ms=au%2Crdu&mv=m&mvi=2&pl=19&rms=au%2Cau&initcwndbps=346250&bui=AYUSA3D2Y-_FrKyRS5gQieWRsicsbyiPfi1GY8JyvhHa72VyQvyr39L0xcXbQBGMymxK9Ey_z0og0eYl&spc=wH4QqydEeB297PdKSrowzR8KwbveyyrPV9ceKxnqgsp6lEZqDLgRglw0oE-d1uWK&vprv=1&svpuc=1&mime=audio%2Fwebm&rqh=1&gir=yes&clen=39850620&dur=2187.801&lmt=1762468995950294&mt=1766252974&fvip=3&keepalive=yes&fexp=51552689%2C51565115%2C51565681%2C51580968&c=ANDROID&txp=6208224&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Crqh%2Cgir%2Cclen%2Cdur%2Clmt&sig=AJfQdSswRQIgc5V4gMmU-fUPQDfCWPObnjN7b3DPaSrqMpZq4t7jeBYCIQCUHxapFRy6-SYc7iqEDkS7H7xRtPZDQFuLPYGzWL7n9A%3D%3D&lsparams=cps%2Cmet%2Cmh%2Cmm%2Cmn%2Cms%2Cmv%2Cmvi%2Cpl%2Crms%2Cinitcwndbps&lsig=APaTxxMwRgIhAMc8FoOIfSh-Nic0gxtfr54vzqjMFPAmXklnDXTLa3Q7AiEAp5mfDaMXvAIv-CXg7H6SDTAekE76_kXiyIX152ZKubE%3D",
-  "https://rr2---sn-uxaxjvhxbt2u-icxl.googlevideo.com/videoplayback?expire=1766275116&ei=zONGae2HDcPfvdIPkY7w8AQ&ip=156.217.133.251&id=o-AA0PpcTzuHo2c_xY-EvW1whxRjYtd52XhDP7rQX51tfQ&itag=140&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&cps=0&met=1766253516%2C&mh=k5&mm=31%2C29&mn=sn-uxaxjvhxbt2u-icxl%2Csn-hgn7yn76&ms=au%2Crdu&mv=m&mvi=2&pl=19&rms=au%2Cau&pcm2=no&initcwndbps=351250&bui=AYUSA3B3PMYz0ej7mZsKcCgKX27t8UrMDdwmuJKhFpyvwpgX9AOoVnKQufnVq2mI0e08XKzXjjK1q2W-&spc=wH4Qq9zqcg4Sqp54RKU8wa5zg9MRmynBKzaQhQrLgfCgo5rakqi0ei9NWuB4AnvHhMJzvQ&vprv=1&svpuc=1&mime=audio%2Fmp4&ns=U40rrEEWV4WuAHvj9UPzUP4R&rqh=1&gir=yes&clen=35408663&dur=2187.830&lmt=1762469902016355&mt=1766253218&fvip=5&keepalive=yes&lmw=1&fexp=51557447%2C51565115%2C51565681%2C51580970&c=TVHTML5&sefc=1&txp=6218224&n=trSGUv1FvnnTj23Bbg&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cpcm2%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Cns%2Crqh%2Cgir%2Cclen%2Cdur%2Clmt&sig=AJfQdSswRQIgYYmG4qrrvGv7f6FEZu_P4yq1RDLDBaDn8fK3prnRDq0CIQCuOHMsvTz_IgCmEeskXkS1K26nb-mzj4MoNhvE7NngJQ%3D%3D&lsparams=cps%2Cmet%2Cmh%2Cmm%2Cmn%2Cms%2Cmv%2Cmvi%2Cpl%2Crms%2Cinitcwndbps&lsig=APaTxxMwRgIhAN2C1F-oScQPjEDyu6bf5cyCgEzytxtI1Z5iK2ljmZdDAiEA4G_c9dVWoCKcUWUWuV2it-BFEkIJJ_sFjw9fR1fvoCE%3D",
-  "https://rr2---sn-uxaxjvhxbt2u-icxl.googlevideo.com/videoplayback?expire=1766275114&ei=yuNGaYzMM9mKvdIPodjwkQ8&ip=156.217.133.251&id=o-AP1HN50POuXgipQtb4Vx8HTFuMVdWrjn8R00vf3MdlLC&itag=140&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&cps=0&met=1766253514%2C&mh=k5&mm=31%2C29&mn=sn-uxaxjvhxbt2u-icxl%2Csn-hgn7yn76&ms=au%2Crdu&mv=m&mvi=2&pl=19&rms=au%2Cau&initcwndbps=351250&bui=AYUSA3BRV6RIFyaTaZ-gtREH1OGOzwJXP8DVOrJuLStpIDrJMrjft3FzIrFbDcjSX83JaTnW0Dpo8SuB&spc=wH4Qq8EGnpSMdGBR6viJ6NR2QrF4rC0OvC_o9IBXgaDN3TKytOBiFA&vprv=1&svpuc=1&mime=audio%2Fmp4&rqh=1&gir=yes&clen=35408663&dur=2187.830&lmt=1762469902016355&mt=1766253218&fvip=5&keepalive=yes&fexp=51552689%2C51565116%2C51565681%2C51580968&c=IOS&txp=6218224&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Crqh%2Cgir%2Cclen%2Cdur%2Clmt&sig=AJfQdSswRAIgalnPw-W3rQmiUQOzOz-j29xvpndRmEuwEn9gDcCFk_ECIFoZEfovgYsdlH9vmO3QoUbPEoCQaJTVd9BtRhdsh9H3&lsparams=cps%2Cmet%2Cmh%2Cmm%2Cmn%2Cms%2Cmv%2Cmvi%2Cpl%2Crms%2Cinitcwndbps&lsig=APaTxxMwRAIgRggyJpOM6j2WTsS2MDkTuycTxoJhKo7DsYXHxpZlTdsCIFEN_b4oD3DNXRFSO6A58E3_xQGblr2Mv1AwueE1TYvJ",
-  "https://rr2---sn-uxaxjvhxbt2u-icxl.googlevideo.com/videoplayback?expire=1766275114&ei=yuNGaY6ENJCH0u8P7djZgAg&ip=156.217.133.251&id=o-AF3ZHXNdF3ZmxB7hlZ1xT3Z4hCGkcwh2iRMZDmvKcBvR&itag=140&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&cps=0&met=1766253514%2C&mh=k5&mm=31%2C29&mn=sn-uxaxjvhxbt2u-icxl%2Csn-hgn7rn7r&ms=au%2Crdu&mv=m&mvi=2&pl=19&rms=au%2Cau&initcwndbps=346250&bui=AYUSA3D2Y-_FrKyRS5gQieWRsicsbyiPfi1GY8JyvhHa72VyQvyr39L0xcXbQBGMymxK9Ey_z0og0eYl&spc=wH4QqydEeB297PdKSrowzR8KwbveyyrPV9ceKxnqgsp6lEZqDLgRglw0oE-d1uWK&vprv=1&svpuc=1&mime=audio%2Fmp4&rqh=1&gir=yes&clen=35408663&dur=2187.830&lmt=1762469902016355&mt=1766252974&fvip=3&keepalive=yes&fexp=51552689%2C51565115%2C51565681%2C51580968&c=ANDROID&txp=6218224&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Crqh%2Cgir%2Cclen%2Cdur%2Clmt&sig=AJfQdSswRQIgdlMkNPQlo0iJLBQklFr2NzWxyxo6SwKemgZzgviFMxgCIQCewHDaUSxX2U_ZZPKQKVTC2l4fQFHi8uNtA-xitsd5fg%3D%3D&lsparams=cps%2Cmet%2Cmh%2Cmm%2Cmn%2Cms%2Cmv%2Cmvi%2Cpl%2Crms%2Cinitcwndbps&lsig=APaTxxMwRgIhAMc8FoOIfSh-Nic0gxtfr54vzqjMFPAmXklnDXTLa3Q7AiEAp5mfDaMXvAIv-CXg7H6SDTAekE76_kXiyIX152ZKubE%3D",
-  "https://rr2---sn-uxaxjvhxbt2u-icxl.googlevideo.com/videoplayback?expire=1766275114&ei=yuNGaYzMM9mKvdIPodjwkQ8&ip=156.217.133.251&id=o-AP1HN50POuXgipQtb4Vx8HTFuMVdWrjn8R00vf3MdlLC&itag=139&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&cps=0&met=1766253514%2C&mh=k5&mm=31%2C29&mn=sn-uxaxjvhxbt2u-icxl%2Csn-hgn7yn76&ms=au%2Crdu&mv=m&mvi=2&pl=19&rms=au%2Cau&initcwndbps=351250&bui=AYUSA3BRV6RIFyaTaZ-gtREH1OGOzwJXP8DVOrJuLStpIDrJMrjft3FzIrFbDcjSX83JaTnW0Dpo8SuB&spc=wH4Qq8EGnpSMdGBR6viJ6NR2QrF4rC0OvC_o9IBXgaDN3TKytOBiFA&vprv=1&svpuc=1&mime=audio%2Fmp4&rqh=1&gir=yes&clen=13342585&dur=2187.923&lmt=1762469962904086&mt=1766253218&fvip=5&keepalive=yes&fexp=51552689%2C51565116%2C51565681%2C51580968&c=IOS&txp=6218224&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Crqh%2Cgir%2Cclen%2Cdur%2Clmt&sig=AJfQdSswRAIgc8zYyskuzuAKOIJJ_kEkppHUR1kIoJNwXi1aFQtnwF0CIGOL-9iu3ZPB1wwCzpdipgXrpJrQm0eAK3IvWLmKzIBB&lsparams=cps%2Cmet%2Cmh%2Cmm%2Cmn%2Cms%2Cmv%2Cmvi%2Cpl%2Crms%2Cinitcwndbps&lsig=APaTxxMwRAIgRggyJpOM6j2WTsS2MDkTuycTxoJhKo7DsYXHxpZlTdsCIFEN_b4oD3DNXRFSO6A58E3_xQGblr2Mv1AwueE1TYvJ",
-  "https://rr2---sn-uxaxjvhxbt2u-icxl.googlevideo.com/videoplayback?expire=1766275114&ei=yuNGaY6ENJCH0u8P7djZgAg&ip=156.217.133.251&id=o-AF3ZHXNdF3ZmxB7hlZ1xT3Z4hCGkcwh2iRMZDmvKcBvR&itag=139&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&cps=0&met=1766253514%2C&mh=k5&mm=31%2C29&mn=sn-uxaxjvhxbt2u-icxl%2Csn-hgn7rn7r&ms=au%2Crdu&mv=m&mvi=2&pl=19&rms=au%2Cau&initcwndbps=346250&bui=AYUSA3D2Y-_FrKyRS5gQieWRsicsbyiPfi1GY8JyvhHa72VyQvyr39L0xcXbQBGMymxK9Ey_z0og0eYl&spc=wH4QqydEeB297PdKSrowzR8KwbveyyrPV9ceKxnqgsp6lEZqDLgRglw0oE-d1uWK&vprv=1&svpuc=1&mime=audio%2Fmp4&rqh=1&gir=yes&clen=13342585&dur=2187.923&lmt=1762469962904086&mt=1766252974&fvip=3&keepalive=yes&fexp=51552689%2C51565115%2C51565681%2C51580968&c=ANDROID&txp=6218224&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Crqh%2Cgir%2Cclen%2Cdur%2Clmt&sig=AJfQdSswRgIhALXIS3uP9KhexR_D3wJOjBIMh8DDsG_nskQc8lhyKS-XAiEAky21xLYDKTaSZx5MB2nzE9GrfjdLR9YmKC5URjMZkro%3D&lsparams=cps%2Cmet%2Cmh%2Cmm%2Cmn%2Cms%2Cmv%2Cmvi%2Cpl%2Crms%2Cinitcwndbps&lsig=APaTxxMwRgIhAMc8FoOIfSh-Nic0gxtfr54vzqjMFPAmXklnDXTLa3Q7AiEAp5mfDaMXvAIv-CXg7H6SDTAekE76_kXiyIX152ZKubE%3D"
-];
-
-
-    const list = document.getElementById("list");
-    const count = document.getElementById("count");
-
-    function copyText(t){
-      navigator.clipboard.writeText(t).then(()=>{},()=>{});
+  <meta charset="UTF-8" />
+  <title>تشغيل يوتيوب مع التوكن</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg-main: #050816;
+      --bg-card: radial-gradient(circle at top, #1f1f49 0, #050816 40%, #02030a 100%);
+      --border-soft: rgba(255, 255, 255, 0.12);
+      --accent: #ffb347;
+      --accent-strong: #ff6b3d;
+      --text-main: #f5f5f5;
+      --text-muted: #a8a8c0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg-main);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .shell {
+      position: relative; /* ✅ مهم عشان زر الكلاسيك يثبت جوه الكارد */
+      width: 100%;
+      max-width: 520px;
+      border-radius: 20px;
+      background: var(--bg-card);
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.05);
+      padding: 20px 18px 18px;
     }
 
-    URLS.forEach((u, i) => {
-      const row = document.createElement("div");
-      row.className = "item";
+    .title { font-size: 18px; font-weight: 600; margin-bottom: 8px; text-align: center; }
+    .subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; text-align: center; }
+    .token-label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+    .token-box {
+      width: 100%;
+      min-height: 54px;
+      border-radius: 14px;
+      background: rgba(3, 7, 30, 0.9);
+      border: 1px solid var(--border-soft);
+      padding: 8px 10px;
+      font-size: 12px;
+      line-height: 1.5;
+      overflow-wrap: break-word;
+    }
+    .btn {
+      margin-top: 18px;
+      width: 100%;
+      border-radius: 999px;
+      border: none;
+      font-size: 14px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      color: #050816;
+      font-weight: 600;
+      box-shadow: 0 10px 24px rgba(255, 107, 61, 0.45);
+    }
+    .btn-secondary {
+      margin-top: 10px;
+      background: transparent;
+      color: var(--text-main);
+      border: 1px solid var(--border-soft);
+      box-shadow: none;
+    }
+    .hidden { display: none; }
 
-      const a = document.createElement("a");
-      a.href = u;
-      a.target = "_blank";
-      a.rel = "noopener";
-      a.textContent = u;
+    /* Logger بسيط */
+    .log {
+      margin-top: 12px;
+      font-size: 12px;
+      color: #cfcfe6;
+      opacity: 0.9;
+      border: 1px dashed rgba(255,255,255,0.18);
+      border-radius: 12px;
+      padding: 10px;
+      background: rgba(0,0,0,0.18);
+      max-height: 140px;
+      overflow: auto;
+      white-space: pre-wrap;
+    }
 
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.textContent = "نسخ";
-      btn.onclick = () => copyText(u);
+    /* ✅ زر الوضع الكلاسيكي */
+    .classic-btn{
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      z-index: 10;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(0,0,0,0.25);
+      color: var(--text-main);
+      font-size: 12px;
+      padding: 8px 12px;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+    }
+    .classic-btn:active { transform: scale(0.98); }
+  </style>
+</head>
 
-      row.appendChild(document.createTextNode((i+1) + ") "));
-      row.appendChild(a);
-      row.appendChild(btn);
-      list.appendChild(row);
-    });
+<body>
+  <div class="shell">
 
-    count.textContent = `عدد الروابط: ${URLS.length}`;
-  </script>
+    <!-- ✅ زر الوضع الكلاسيكي (أعلى يمين) -->
+    <button id="classicModeBtn" class="classic-btn" type="button">الوضع الكلاسيكي</button>
+
+    <!-- الصفحة الأولى -->
+    <div id="page1">
+      <div class="title">تشغيل يوتيوب معنا</div>
+      <div class="subtitle">اضغط على الزر بالأسفل للانتقال إلى خطوة تشغيل الفيديو.</div>
+
+      <div class="token-label">authToken من localStorage</div>
+      <div id="tokenBoxPage1" class="token-box">جارِ تحميل التوكن...</div>
+
+      <button id="goToPage2" class="btn">اضغط هنا لتشغيل يوتيوب معنا ▶</button>
+
+      <div id="log1" class="log"></div>
+    </div>
+
+    <!-- الصفحة الثانية -->
+    <div id="page2" class="hidden">
+      <div class="title">خطوة تشغيل الفيديو</div>
+      <div class="subtitle">اختر طريقة تشغيل الفيديو</div>
+
+      <div class="token-label">authToken من localStorage</div>
+      <div id="tokenBoxPage2" class="token-box">جارِ تحميل التوكن...</div>
+
+      <button id="openYoutube" class="btn">تشغيل يوتيوب (Watch) ▶</button>
+      <button id="openYoutubeEmbedDirect" class="btn btn-secondary">تشغيل يوتيوب (Embedded مباشر) ▶</button>
+      <button id="backToPage1" class="btn btn-secondary">رجوع للصفحة السابقة</button>
+
+      <div id="log2" class="log"></div>
+    </div>
+
+  </div>
+
+<script>
+(function () {
+  "use strict";
+
+  const YOUTUBE_WATCH_URL = "https://www.youtube.com/watch?v=m-VVub8Jp_w";
+  const YOUTUBE_EMBED_URL = "https://www.youtube.com/embed/m-VVub8Jp_w?autoplay=1&playsinline=1";
+
+  // ✅ بيانات الدرس يدويًا هنا
+  const LESSON_CONTEXT = {
+    isInteractiveQuiz: true,
+    timelineMarkers: [
+      { name: "مقدمة", time: "00:00:10" },
+      { name: "الجزء الأول", time: "00:02:30" },
+      { name: "خلاصة", time: "00:08:15" }
+    ],
+    lessonQuizzes: [
+      { quizId: "QZ_001", appearAtSeconds: 45,  webUrl: "https://example.com/quiz/1", isCompleted: false },
+      { quizId: "QZ_002", appearAtSeconds: 210, webUrl: "https://example.com/quiz/2", isCompleted: false }
+    ]
+  };
+
+  function el(id){ return document.getElementById(id); }
+
+  function log(msg) {
+    const activeLog = el("page2").classList.contains("hidden") ? el("log1") : el("log2");
+    const line = `[${new Date().toLocaleTimeString()}] ${msg}\n`;
+    if (activeLog) activeLog.textContent = (activeLog.textContent + line).slice(-3000);
+  }
+
+  function parseTimeToSeconds(timeStr) {
+    const parts = String(timeStr || "00:00:00").split(":").map(Number);
+    if (parts.length !== 3 || parts.some(isNaN)) return 0;
+    return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  }
+
+  function writeLessonContextToLocalStorage(ctx) {
+    const timeline = (ctx.timelineMarkers || []).map(m => ({
+      name: m.name || "",
+      time: m.time || "00:00:00",
+      timeInSeconds: parseTimeToSeconds(m.time)
+    }));
+
+    const quizzes = (ctx.lessonQuizzes || []).map(q => ({
+      quizId: String(q.quizId || ""),
+      appearAtSeconds: Number(q.appearAtSeconds || 0),
+      webUrl: String(q.webUrl || ""),
+      isCompleted: !!q.isCompleted
+    }));
+
+    localStorage.setItem("isInteractiveQuiz", JSON.stringify(!!ctx.isInteractiveQuiz));
+    localStorage.setItem("timelineMarkers", JSON.stringify(timeline));
+    localStorage.setItem("lessonQuizzes", JSON.stringify(quizzes));
+
+    return { ok: true, timeline, quizzes };
+  }
+
+  function notifyFlutterContextReady(payload) {
+    try {
+      if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
+        window.flutter_inappwebview.callHandler("lessonContextReady", payload);
+        log("✅ تم إرسال lessonContextReady لـ Flutter");
+      } else {
+        log("ℹ️ flutter_inappwebview غير موجود (تجربة متصفح عادي)");
+      }
+    } catch (e) {
+      log("⚠️ خطأ أثناء callHandler: " + (e && e.message ? e.message : e));
+    }
+  }
+
+  /* ✅ إرسال حدث classicMode لـ Flutter */
+  function notifyFlutterClassicMode(payload) {
+    try {
+      if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
+        window.flutter_inappwebview.callHandler("classicMode", payload);
+        log("✅ تم إرسال classicMode لـ Flutter");
+      } else {
+        log("ℹ️ flutter_inappwebview غير موجود (تجربة متصفح عادي)");
+      }
+    } catch (e) {
+      log("⚠️ خطأ أثناء classicMode callHandler: " + (e && e.message ? e.message : e));
+    }
+  }
+
+  function setTokenBoxes() {
+    const token = localStorage.getItem("authToken") || "(لا يوجد authToken)";
+    if (el("tokenBoxPage1")) el("tokenBoxPage1").textContent = token;
+    if (el("tokenBoxPage2")) el("tokenBoxPage2").textContent = token;
+  }
+
+  function showPage(pageNo) {
+    const p1 = el("page1");
+    const p2 = el("page2");
+    if (!p1 || !p2) return;
+
+    if (pageNo === 1) {
+      p1.classList.remove("hidden");
+      p2.classList.add("hidden");
+      log("⬅️ رجوع للصفحة 1");
+    } else {
+      p1.classList.add("hidden");
+      p2.classList.remove("hidden");
+      log("➡️ فتح الصفحة 2");
+    }
+    setTokenBoxes();
+  }
+
+  function prepareAndGo(url) {
+    try {
+      const result = writeLessonContextToLocalStorage(LESSON_CONTEXT);
+
+      const payload = {
+        ok: result.ok,
+        isInteractiveQuiz: LESSON_CONTEXT.isInteractiveQuiz,
+        timelineMarkers: result.timeline || [],
+        lessonQuizzes: result.quizzes || [],
+        ts: Date.now()
+      };
+
+      log("✅ تم حفظ الداتا في localStorage");
+      log("timelineMarkers=" + localStorage.getItem("timelineMarkers"));
+      log("lessonQuizzes=" + localStorage.getItem("lessonQuizzes"));
+
+      notifyFlutterContextReady(payload);
+
+      // انتقل
+      setTimeout(() => {
+        log("🚀 انتقال إلى: " + url);
+        window.location.assign(url);
+      }, 80);
+    } catch (e) {
+      log("❌ خطأ داخل prepareAndGo: " + (e && e.message ? e.message : e));
+    }
+  }
+
+  function bindHandlers() {
+    setTokenBoxes();
+    log("✅ bindHandlers اشتغل");
+
+    const classicBtn = el("classicModeBtn");
+    const goToPage2 = el("goToPage2");
+    const backToPage1 = el("backToPage1");
+    const btnWatch = el("openYoutube");
+    const btnEmbed = el("openYoutubeEmbedDirect");
+
+    // ✅ زر الكلاسيك مود
+    if (classicBtn) {
+      classicBtn.addEventListener("click", () => {
+        try {
+          localStorage.setItem("classic_mode", "true");
+          log("✅ classic_mode=true saved to localStorage");
+
+          // إخطار Flutter فورًا (أفضل من polling)
+          notifyFlutterClassicMode({ classic_mode: true, ts: Date.now() });
+        } catch (e) {
+          log("❌ classic mode error: " + (e && e.message ? e.message : e));
+        }
+      });
+    } else {
+      log("⚠️ زر classicModeBtn غير موجود");
+    }
+
+    if (goToPage2) goToPage2.addEventListener("click", () => showPage(2));
+    if (backToPage1) backToPage1.addEventListener("click", () => showPage(1));
+    if (btnWatch) btnWatch.addEventListener("click", () => prepareAndGo(YOUTUBE_WATCH_URL));
+    if (btnEmbed) btnEmbed.addEventListener("click", () => prepareAndGo(YOUTUBE_EMBED_URL));
+
+    if (!goToPage2) log("⚠️ زر goToPage2 غير موجود");
+  }
+
+  // ربط آمن (يشتغل في أغلب البيئات)
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bindHandlers);
+  } else {
+    bindHandlers();
+  }
+
+  // fallback إضافي لو بيئة WebView غريبة
+  setTimeout(() => {
+    try { bindHandlers(); } catch (_) {}
+  }, 300);
+
+})();
+</script>
+
 </body>
 </html>
